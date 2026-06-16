@@ -50,7 +50,8 @@ bibleRoutes.post("/notes", async (c) => {
 });
 
 bibleRoutes.get("/notes", async (c) => {
-  const userId = Number(c.req.query("userId"));
+  const userId = c.req.query("userId");
+  if (!userId) return c.json([]);
   const notes = await db.select().from(bibleNotes).where(eq(bibleNotes.userId, userId));
   return c.json(notes);
 });
