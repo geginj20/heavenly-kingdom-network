@@ -58,7 +58,10 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+type AuthUser = { id: number; name: string; email: string; role: string; avatar?: string };
+
 export const api = {
+  getToken,
   setToken(token: string) {
     localStorage.setItem("hkn-token", token);
   },
@@ -67,13 +70,26 @@ export const api = {
   },
 
   auth: {
-    login: async (username: string, password: string) => {
-      const res = await request<{ token: string; user: { id: number; name: string; role: string } }>("/auth/login", {
+    login: async (email: string, password: string) => {
+      return request<{ token: string; user: AuthUser }>("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: email, password }),
       });
-      api.setToken(res.token);
-      return res;
+    },
+    register: async (name: string, email: string, password: string) => {
+      return request<{ token: string; user: AuthUser }>("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ name, email, password }),
+      });
+    },
+    google: async (token: string) => {
+      return request<{ token: string; user: AuthUser }>("/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
+    },
+    me: async () => {
+      return request<AuthUser>("/auth/me", { headers: authHeaders() });
     },
   },
 
