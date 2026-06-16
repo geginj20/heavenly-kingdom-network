@@ -111,7 +111,7 @@ function GoogleSignInButton({ onSuccess }: { onSuccess: (token: string) => void 
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.onload = () => {
-      const google = (window as Record<string, unknown>).google as {
+      const google = (window as unknown as Record<string, unknown>).google as {
         accounts: { id: { initialize: (opts: Record<string, unknown>) => void; renderButton: (el: HTMLElement, opts: Record<string, unknown>) => void } };
       };
       if (!google?.accounts?.id) return;

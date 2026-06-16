@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { desc, eq } from "drizzle-orm";
-import { db } from "../db";
+import { getDb } from "../db";
 import { prayers, events, donations } from "../db/schema";
 import { requireAdmin } from "../lib/jwt";
 
@@ -8,6 +8,7 @@ export const adminRoutes = new Hono();
 adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/stats", async (c) => {
+  const db = getDb();
   const allPrayers = await db.select().from(prayers);
   const pendingPrayers = allPrayers.filter((p) => p.status === "pending").length;
   const allEvents = await db.select().from(events);
@@ -31,6 +32,7 @@ adminRoutes.get("/stats", async (c) => {
 });
 
 adminRoutes.get("/prayers", async (c) => {
+  const db = getDb();
   const statusFilter = c.req.query("status");
   const all = await db
     .select()
@@ -41,6 +43,7 @@ adminRoutes.get("/prayers", async (c) => {
 });
 
 adminRoutes.patch("/prayers/:id/status", async (c) => {
+  const db = getDb();
   const id = Number(c.req.param("id"));
   const { status } = await c.req.json();
   const [prayer] = await db.update(prayers).set({ status }).where(eq(prayers.id, id)).returning();
@@ -48,6 +51,7 @@ adminRoutes.patch("/prayers/:id/status", async (c) => {
 });
 
 adminRoutes.delete("/prayers/:id", async (c) => {
+  const db = getDb();
   const id = Number(c.req.param("id"));
   await db.delete(prayers).where(eq(prayers.id, id));
   return c.json({ success: true });

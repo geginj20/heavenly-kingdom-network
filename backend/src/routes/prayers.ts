@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { desc, eq, sql } from "drizzle-orm";
-import { db } from "../db";
+import { getDb } from "../db";
 import { prayers, prayerComments } from "../db/schema";
 
 export const prayerRoutes = new Hono();
@@ -14,6 +14,7 @@ const createPrayerSchema = z.object({
 });
 
 prayerRoutes.get("/", async (c) => {
+  const db = getDb();
   const category = c.req.query("category");
   const all = await db
     .select()
@@ -24,6 +25,7 @@ prayerRoutes.get("/", async (c) => {
 });
 
 prayerRoutes.post("/", zValidator("json", createPrayerSchema), async (c) => {
+  const db = getDb();
   const data = c.req.valid("json");
   const [prayer] = await db
     .insert(prayers)
@@ -41,6 +43,7 @@ prayerRoutes.post("/", zValidator("json", createPrayerSchema), async (c) => {
 });
 
 prayerRoutes.post("/:id/pray", async (c) => {
+  const db = getDb();
   const id = Number(c.req.param("id"));
   const [prayer] = await db
     .update(prayers)
@@ -51,6 +54,7 @@ prayerRoutes.post("/:id/pray", async (c) => {
 });
 
 prayerRoutes.get("/:id/comments", async (c) => {
+  const db = getDb();
   const prayerId = Number(c.req.param("id"));
   const comments = await db
     .select()
@@ -61,6 +65,7 @@ prayerRoutes.get("/:id/comments", async (c) => {
 });
 
 prayerRoutes.post("/:id/comments", async (c) => {
+  const db = getDb();
   const prayerId = Number(c.req.param("id"));
   const body = await c.req.json();
   const [comment] = await db
@@ -74,8 +79,8 @@ prayerRoutes.post("/:id/comments", async (c) => {
   return c.json(comment, 201);
 });
 
-prayerRoutes.get("/categories", async (c) => {
-  return c.json([
+prayerRoutes.get("/categories", async () => {
+  return Response.json([
     "All Prayers", "Healing", "Family", "Ministry", "Finances", "Guidance", "Salvation", "Relationships", "Other",
   ]);
 });

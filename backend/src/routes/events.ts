@@ -2,13 +2,14 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { desc } from "drizzle-orm";
-import { db } from "../db";
+import { getDb } from "../db";
 import { events, eventRsvps } from "../db/schema";
 import { requireAdmin } from "../lib/jwt";
 
 export const eventRoutes = new Hono();
 
 eventRoutes.get("/", async (c) => {
+  const db = getDb();
   const all = await db.select().from(events).orderBy(desc(events.date));
   return c.json(all);
 });
@@ -27,6 +28,7 @@ const createEventSchema = z.object({
 });
 
 eventRoutes.post("/", requireAdmin, zValidator("json", createEventSchema), async (c) => {
+  const db = getDb();
   const data = c.req.valid("json");
   const d = new Date(data.date);
   const [event] = await db.insert(events).values({
@@ -38,6 +40,7 @@ eventRoutes.post("/", requireAdmin, zValidator("json", createEventSchema), async
 });
 
 eventRoutes.post("/:id/rsvp", async (c) => {
+  const db = getDb();
   const eventId = Number(c.req.param("id"));
   const body = await c.req.json();
   const [rsvp] = await db.insert(eventRsvps).values({ eventId, name: body.name, email: body.email }).returning();

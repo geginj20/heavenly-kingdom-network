@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { and, eq, like, or } from "drizzle-orm";
-import { db } from "../db";
+import { getDb } from "../db";
 import { sermons } from "../db/schema";
 
 export const sermonRoutes = new Hono();
 
 sermonRoutes.get("/", async (c) => {
+  const db = getDb();
   const category = c.req.query("category");
   const query = c.req.query("q");
 
@@ -23,8 +24,8 @@ sermonRoutes.get("/", async (c) => {
   return c.json(all);
 });
 
-sermonRoutes.get("/categories", async (c) => {
-  return c.json([
+sermonRoutes.get("/categories", async () => {
+  return Response.json([
     "All", "Faith", "Hope", "Love", "Discipleship", "Leadership", "Worship", "Prophecy", "Healing", "Finance", "Relationships",
   ]);
 });
