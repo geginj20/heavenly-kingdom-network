@@ -1,9 +1,12 @@
-import { db } from "../db";
+import { getDb } from "../db";
 import { prayers, sermons, events, users, donations } from "../db/schema";
-import { supabase } from "./supabase";
+import { getSupabase } from "./supabase";
 
 async function seed() {
   console.log("Seeding database...");
+
+  const supabase = getSupabase();
+  const db = getDb();
 
   const { data: adminAuth, error: adminErr } = await supabase.auth.admin.createUser({
     email: "admin@hkn.com",

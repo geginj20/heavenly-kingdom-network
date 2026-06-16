@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import { db } from "../db";
+import { getDb } from "../db";
 import { users } from "../db/schema";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
 import { signToken, verifyToken } from "../lib/jwt";
 
 export const authRoutes = new Hono();
@@ -27,11 +27,12 @@ const googleSchema = z.object({
 authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
   const { email, password } = c.req.valid("json");
 
-  const { data: authUser, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: authUser, error } = await getSupabase().auth.signInWithPassword({ email, password });
   if (error || !authUser.user) {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
+  const db = getDb();
   const [user] = await db.select().from(users).where(eq(users.id, authUser.user.id));
   if (!user) {
     return c.json({ error: "User not found" }, 404);
@@ -47,7 +48,7 @@ authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
 authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
   const { name, email, password } = c.req.valid("json");
 
-  const { data: authUser, error } = await supabase.auth.signUp({ email, password });
+  const { data: authUser, error } = await getSupabase().auth.signUp({ email, password });
   if (error) {
     if (error.message.includes("already")) {
       return c.json({ error: "Email already registered" }, 409);
@@ -58,6 +59,7 @@ authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
     return c.json({ error: "Registration failed" }, 500);
   }
 
+  const db = getDb();
   const [user] = await db.insert(users).values({ id: authUser.user.id, name, email, role: "member" }).returning();
 
   const token = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
@@ -70,7 +72,7 @@ authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
 authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
   const { token: idToken } = c.req.valid("json");
 
-  const { data, error } = await supabase.auth.signInWithIdToken({
+  const { data, error } = await getSupabase().auth.signInWithIdToken({
     provider: "google",
     token: idToken,
   });
@@ -79,6 +81,7 @@ authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
   }
 
   const authUser = data.user;
+  const db = getDb();
   let [user] = await db.select().from(users).where(eq(users.id, authUser.id));
   if (!user) {
     const [created] = await db
@@ -111,6 +114,7 @@ authRoutes.get("/me", async (c) => {
 
   try {
     const payload = verifyToken(token);
+    const db = getDb();
     const [user] = await db.select().from(users).where(eq(users.id, payload.userId));
     if (!user) {
       return c.json({ error: "User not found" }, 404);

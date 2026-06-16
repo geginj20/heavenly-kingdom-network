@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { db } from "../db";
+import { getDb } from "../db";
 import { bibleNotes } from "../db/schema";
 import { eq } from "drizzle-orm";
 
@@ -39,6 +39,7 @@ bibleRoutes.get("/verses/:book/:chapter", async (c) => {
 });
 
 bibleRoutes.post("/notes", async (c) => {
+  const db = getDb();
   const body = await c.req.json();
   const [note] = await db.insert(bibleNotes).values({
     userId: body.userId,
@@ -50,6 +51,7 @@ bibleRoutes.post("/notes", async (c) => {
 });
 
 bibleRoutes.get("/notes", async (c) => {
+  const db = getDb();
   const userId = c.req.query("userId");
   if (!userId) return c.json([]);
   const notes = await db.select().from(bibleNotes).where(eq(bibleNotes.userId, userId));
