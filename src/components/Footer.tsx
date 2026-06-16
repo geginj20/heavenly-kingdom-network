@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Cross, Heart, Github, Twitter, Youtube, Mail } from "lucide-react";
+import { Heart, Github, Twitter, Youtube, Mail } from "lucide-react";
 
 const footerLinks = {
   about: {
@@ -41,8 +41,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Cross className="w-6 h-6 text-[#d4af37]" />
+            <Link to="/" className="flex items-center gap-3 mb-4">
+              <img src="./logo.png" alt="Heavenly Kingdom Network" className="h-8 w-auto" />
               <span className="font-display text-xl font-bold">Heavenly Kingdom Network</span>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed max-w-sm mb-6">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Cross, Menu, X, Radio, User } from "lucide-react";
+import { Menu, X, Radio, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -43,8 +43,8 @@ export default function Navigation() {
       >
         <div className="container-main mx-auto h-full flex items-center justify-between px-4 sm:px-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <Cross className="w-6 h-6 text-[#d4af37] transition-transform group-hover:rotate-12" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src="./logo.png" alt="Heavenly Kingdom Network" className="h-8 w-auto" />
             <span className="font-display text-xl md:text-[22px] font-bold text-white tracking-tight">
               Heavenly Kingdom Network
             </span>
