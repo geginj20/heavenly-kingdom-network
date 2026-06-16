@@ -5,9 +5,10 @@ import { getCookie } from "hono/cookie";
 const JWT_SECRET = process.env.JWT_SECRET || "hkn-dev-secret-change-in-production";
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   role: string;
   name: string;
+  email?: string;
 }
 
 export function signToken(payload: JwtPayload): string {
