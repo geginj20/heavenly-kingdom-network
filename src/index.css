@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 216 55% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 216 55% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 55% 12%;
+    --primary: 216 55% 12%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 33% 93%;
+    --secondary-foreground: 216 55% 12%;
+    --muted: 30 25% 95%;
+    --muted-foreground: 215 14% 50%;
+    --accent: 42 72% 52%;
+    --accent-foreground: 216 55% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 42 72% 52%;
+    --radius: 0.625rem;
+    --gold: #d4af37;
+    --midnight: #0c1b33;
+    --storm-gray: #6b7c93;
+    --cloud-blue: #e6eef7;
+    --parchment: #f5f0e8;
+    --deep-navy: #162a4a;
+    --alabaster: #f8f6f3;
+    --bronze: #8b5e3c;
+  }
+
+  .dark {
+    --background: 216 55% 12%;
+    --foreground: 0 0% 98%;
+    --card: 216 45% 16%;
+    --card-foreground: 0 0% 98%;
+    --popover: 216 45% 16%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 42 72% 52%;
+    --primary-foreground: 216 55% 12%;
+    --secondary: 216 35% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 216 35% 20%;
+    --muted-foreground: 215 14% 65%;
+    --accent: 42 72% 52%;
+    --accent-foreground: 216 55% 12%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 216 35% 20%;
+    --input: 216 35% 20%;
+    --ring: 42 72% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-[#e6eef7] text-[#0c1b33] antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+  .bg-midnight {
+    background-color: var(--midnight);
+  }
+  .bg-cloud-blue {
+    background-color: var(--cloud-blue);
+  }
+  .bg-parchment {
+    background-color: var(--parchment);
+  }
+  .bg-deep-navy {
+    background-color: var(--deep-navy);
+  }
+  .bg-alabaster {
+    background-color: var(--alabaster);
+  }
+  .btn-gold {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300;
+    background-color: var(--gold);
+    color: var(--midnight);
+  }
+  .btn-gold:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+  }
+  .card-parchment {
+    @apply rounded-2xl p-6;
+    background-color: var(--parchment);
+  }
+  .section-padding {
+    @apply py-20 md:py-24 px-4 sm:px-6 lg:px-8;
+  }
+  .container-main {
+    @apply max-w-[1400px] mx-auto;
+  }
+}
+
+@layer utilities {
+  .prayer-glow {
+    animation: prayerGlow 3s ease-in-out infinite;
+  }
+  @keyframes prayerGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px 2px rgba(212, 175, 55, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 30px 6px rgba(212, 175, 55, 0.08);
+    }
+  }
+  .living-water-text {
+    background: linear-gradient(90deg, #ffffff 0%, rgba(212, 175, 55, 0.9) 50%, #ffffff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+  .sacred-spotlight {
+    background: radial-gradient(300px circle at var(--x, 50%) var(--y, 50%), rgba(212, 175, 55, 0.06), transparent 60%);
+    pointer-events: none;
+  }
+  .fade-up {
+    animation: fadeUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cloud-blue);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--storm-gray);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--midnight);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: var(--midnight);
+}
