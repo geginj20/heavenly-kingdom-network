@@ -1,0 +1,17 @@
+name = "hkn-api"
+main = "src/index.ts"
+compatibility_date = "2025-03-01"
+
+[vars]
+JWT_SECRET = "change-me-in-production"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hkn"
+database_id = ""
+
+[env.production]
+vars = { JWT_SECRET = "" }
+
+[env.production.triggers]
+crons = ["0 0 * * *"]
