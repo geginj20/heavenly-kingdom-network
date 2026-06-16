@@ -1,73 +1,72 @@
-# React + TypeScript + Vite
+# Heavenly Kingdom Network (HKN)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A global, open-source Christian platform connecting believers worldwide through prayer, scripture, and fellowship — built on a $0/month infrastructure that serves the Kingdom.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Prayer Wall** — Share prayer requests, pray for others, and build community
+- **Bible Reader** — Read scripture with multiple translations (NIV, ESV, KJV), bookmark verses, and add study notes
+- **Sermon Library** — Searchable collection of teachings from ministries worldwide
+- **Events Calendar** — Interactive calendar with RSVP for global gatherings
+- **Live Streaming** — Watch live worship services and events
+- **Give** — Support the mission with one-time or recurring donations
+- **Admin Dashboard** — Manage users, moderate prayers, create events, and view analytics
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Category | Technology |
+|---|---|
+| Framework | React 19 + TypeScript 5.9 |
+| Bundler | Vite 7.2 |
+| Routing | react-router-dom v7 (HashRouter) |
+| Styling | Tailwind CSS v3.4 + shadcn/ui |
+| Animation | Framer Motion |
+| Forms | react-hook-form + zod |
+| Icons | lucide-react |
+| Testing | Vitest + React Testing Library |
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Clone the repository
+git clone https://github.com/geginj20/hkn-website.git
+cd hkn-website
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Install dependencies
+npm install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Start development server
+npm run dev
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Run tests
+npm run test
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Project Structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── components/       # Shared components
+│   └── ui/           # 53 shadcn/ui primitives
+├── pages/            # Route pages
+│   └── home/         # Home page sections
+├── hooks/            # Custom React hooks
+├── lib/              # Utilities, API layer, auth
+├── data/             # Demo data & types
+└── test/             # Test files
+```
+
+## Scripts
+
+- `npm run dev` — Start dev server (port 3000)
+- `npm run build` — TypeScript check + production build
+- `npm run lint` — Run ESLint
+- `npm run test` — Run Vitest tests
+- `npm run preview` — Preview production build
+
+## License
+
+MIT — see [LICENSE](LICENSE)
