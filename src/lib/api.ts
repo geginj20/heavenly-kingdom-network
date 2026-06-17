@@ -184,6 +184,13 @@ export const api = {
   },
 
   bible: {
+    dailyVerse: async (translation = "kjv"): Promise<{ text: string; reference: string; translation: string }> => {
+      try {
+        return await request(`/bible/daily?translation=${translation}`);
+      } catch {
+        return { text: "The Lord is my shepherd; I shall not want.", reference: "Psalms 23:1 (KJV)", translation };
+      }
+    },
     books: async () => {
       const data = await request<{ books: BibleBook[]; translations: string[]; translationNames: Record<string, string> }>("/bible/books");
       return data;
