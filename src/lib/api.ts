@@ -208,7 +208,7 @@ export const api = {
       if (!API_BASE) {
         const q = query.toLowerCase();
         const results = Object.entries(sampleVerses).flatMap(([book, verses]) =>
-          verses.filter((v) => v.text.toLowerCase().includes(q)).map((v) => ({ book, ...v }))
+          verses.filter((v) => v.text.toLowerCase().includes(q)).map((v) => ({ book, chapter: 1, verse: v.verse, text: v.text }))
         );
         return { results, query, translation };
       }
