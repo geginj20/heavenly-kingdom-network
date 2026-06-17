@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Clock, Bookmark, Play } from "lucide-react";
+import { Search, Clock, Bookmark, Play, Loader2 } from "lucide-react";
 import ScrollReveal from "../../components/ScrollReveal";
-import { demoSermons, sermonCategories } from "../../data/demoData";
+import { api } from "../../lib/api";
+import type { Sermon } from "../../data/demoData";
 
 export default function SermonPreviewSection() {
+  const [sermons, setSermons] = useState<Sermon[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredSermons = demoSermons
+  useEffect(() => {
+    api.sermons.list().then((data) => {
+      setSermons(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const filteredSermons = sermons
     .filter((s) => activeCategory === "All" || s.category === activeCategory)
     .filter((s) =>
       searchQuery
@@ -48,7 +58,7 @@ export default function SermonPreviewSection() {
 
         <ScrollReveal delay={150}>
           <div className="flex flex-wrap gap-2 mb-8">
-            {sermonCategories.map((cat) => (
+            {["All", "Worship", "Teaching", "Prophetic", "Healing", "Deliverance", "Faith", "Prayer"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -64,46 +74,57 @@ export default function SermonPreviewSection() {
           </div>
         </ScrollReveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSermons.map((sermon, index) => (
-            <ScrollReveal key={sermon.id} delay={index * 100}>
-              <div className="group bg-white rounded-2xl overflow-hidden border border-[#0c1b33]/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={sermon.thumbnail}
-                    alt={sermon.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center">
-                      <Play className="w-5 h-5 text-[#0c1b33] ml-0.5" />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-[#d4af37] animate-spin" />
+          </div>
+        ) : filteredSermons.length === 0 ? (
+          <div className="text-center py-12">
+            <Play className="w-10 h-10 text-[#6b7c93]/30 mx-auto mb-3" />
+            <p className="text-[#6b7c93]">No sermons found</p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSermons.slice(0, 6).map((sermon, index) => (
+              <ScrollReveal key={sermon.id} delay={index * 100}>
+                <div className="group bg-white rounded-2xl overflow-hidden border border-[#0c1b33]/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="relative aspect-video overflow-hidden">
+                    <img
+                      src={sermon.thumbnail}
+                      alt={sermon.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center">
+                        <Play className="w-5 h-5 text-[#0c1b33] ml-0.5" />
+                      </div>
+                    </div>
+                    <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/70 text-white text-xs font-medium flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {sermon.duration}
+                    </span>
+                  </div>
+                  <div className="p-5">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#d4af37]/10 text-[#8b5e3c] text-xs font-medium mb-2">
+                      {sermon.category}
+                    </span>
+                    <h3 className="font-semibold text-[#0c1b33] mb-1 line-clamp-2 group-hover:text-[#d4af37] transition-colors">
+                      {sermon.title}
+                    </h3>
+                    <p className="text-sm text-[#6b7c93]">{sermon.speaker}</p>
+                    <p className="text-xs text-[#6b7c93]/70 mt-1">{sermon.ministry}</p>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#0c1b33]/5">
+                      <span className="text-xs text-[#6b7c93]">{sermon.date}</span>
+                      <button className="p-1.5 rounded-full hover:bg-[#e6eef7] transition-colors">
+                        <Bookmark className="w-4 h-4 text-[#6b7c93]" />
+                      </button>
                     </div>
                   </div>
-                  <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/70 text-white text-xs font-medium flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {sermon.duration}
-                  </span>
                 </div>
-                <div className="p-5">
-                  <span className="inline-block px-3 py-1 rounded-full bg-[#d4af37]/10 text-[#8b5e3c] text-xs font-medium mb-2">
-                    {sermon.category}
-                  </span>
-                  <h3 className="font-semibold text-[#0c1b33] mb-1 line-clamp-2 group-hover:text-[#d4af37] transition-colors">
-                    {sermon.title}
-                  </h3>
-                  <p className="text-sm text-[#6b7c93]">{sermon.speaker}</p>
-                  <p className="text-xs text-[#6b7c93]/70 mt-1">{sermon.ministry}</p>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#0c1b33]/5">
-                    <span className="text-xs text-[#6b7c93]">{sermon.date}</span>
-                    <button className="p-1.5 rounded-full hover:bg-[#e6eef7] transition-colors">
-                      <Bookmark className="w-4 h-4 text-[#6b7c93]" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
 
         <ScrollReveal>
           <div className="text-center mt-10">
