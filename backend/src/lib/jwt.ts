@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import { sign, verify } from "hono/jwt";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 
@@ -11,12 +11,12 @@ export interface JwtPayload {
   email?: string;
 }
 
-export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+export async function signToken(payload: JwtPayload): Promise<string> {
+  return sign({ ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 }, JWT_SECRET, "HS256");
 }
 
-export function verifyToken(token: string): JwtPayload {
-  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+export async function verifyToken(token: string): Promise<JwtPayload> {
+  return verify(token, JWT_SECRET, "HS256") as unknown as Promise<JwtPayload>;
 }
 
 export async function requireAdmin(c: Context, next: () => Promise<void>) {
@@ -28,7 +28,7 @@ export async function requireAdmin(c: Context, next: () => Promise<void>) {
   }
 
   try {
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     if (payload.role !== "admin" && payload.role !== "superadmin") {
       return c.json({ error: "Forbidden" }, 403);
     }
