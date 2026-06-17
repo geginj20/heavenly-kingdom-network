@@ -107,6 +107,102 @@ bibleRoutes.get("/verses/:book/:chapter", async (c) => {
   }
 });
 
+bibleRoutes.get("/daily", async (c) => {
+  const translation = (c.req.query("translation") || "kjv") as string;
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const diff = now.getTime() - startOfYear.getTime();
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const dailyVerses = [
+    { book: "Psalms", chapter: 118, verse: 24 },
+    { book: "Jeremiah", chapter: 29, verse: 11 },
+    { book: "Philippians", chapter: 4, verse: 13 },
+    { book: "Isaiah", chapter: 40, verse: 31 },
+    { book: "Psalms", chapter: 23, verse: 1 },
+    { book: "John", chapter: 3, verse: 16 },
+    { book: "Romans", chapter: 8, verse: 28 },
+    { book: "Psalms", chapter: 46, verse: 10 },
+    { book: "Proverbs", chapter: 3, verse: 5 },
+    { book: "Joshua", chapter: 1, verse: 9 },
+    { book: "2 Corinthians", chapter: 5, verse: 17 },
+    { book: "Ephesians", chapter: 2, verse: 8 },
+    { book: "Psalms", chapter: 121, verse: 1 },
+    { book: "Romans", chapter: 15, verse: 13 },
+    { book: "Psalms", chapter: 34, verse: 8 },
+    { book: "Matthew", chapter: 11, verse: 28 },
+    { book: "Psalms", chapter: 20, verse: 4 },
+    { book: "Isaiah", chapter: 43, verse: 2 },
+    { book: "Hebrews", chapter: 11, verse: 1 },
+    { book: "Psalms", chapter: 27, verse: 1 },
+    { book: "1 Corinthians", chapter: 13, verse: 4 },
+    { book: "John", chapter: 14, verse: 6 },
+    { book: "Psalms", chapter: 37, verse: 4 },
+    { book: "Romans", chapter: 12, verse: 2 },
+    { book: "Micah", chapter: 6, verse: 8 },
+    { book: "Galatians", chapter: 5, verse: 22 },
+    { book: "Psalms", chapter: 62, verse: 8 },
+    { book: "Colossians", chapter: 3, verse: 23 },
+    { book: "1 Peter", chapter: 5, verse: 7 },
+    { book: "Psalms", chapter: 16, verse: 8 },
+    { book: "Matthew", chapter: 5, verse: 14 },
+    { book: "Philippians", chapter: 3, verse: 14 },
+    { book: "1 John", chapter: 4, verse: 19 },
+    { book: "Psalms", chapter: 9, verse: 10 },
+    { book: "Hebrews", chapter: 12, verse: 1 },
+    { book: "Romans", chapter: 10, verse: 9 },
+    { book: "Psalms", chapter: 19, verse: 14 },
+    { book: "Isaiah", chapter: 55, verse: 6 },
+    { book: "Deuteronomy", chapter: 7, verse: 9 },
+    { book: "Zephaniah", chapter: 3, verse: 17 },
+    { book: "1 Chronicles", chapter: 16, verse: 34 },
+    { book: "Psalms", chapter: 136, verse: 1 },
+    { book: "Ephesians", chapter: 1, verse: 11 },
+    { book: "Romans", chapter: 5, verse: 8 },
+    { book: "James", chapter: 1, verse: 17 },
+    { book: "Psalms", chapter: 33, verse: 4 },
+    { book: "Psalms", chapter: 85, verse: 8 },
+    { book: "Psalms", chapter: 100, verse: 5 },
+    { book: "Lamentations", chapter: 3, verse: 22 },
+    { book: "Nahum", chapter: 1, verse: 7 },
+    { book: "Psalms", chapter: 30, verse: 5 },
+    { book: "Psalms", chapter: 34, verse: 4 },
+    { book: "Psalms", chapter: 145, verse: 9 },
+    { book: "Deuteronomy", chapter: 10, verse: 12 },
+    { book: "Psalms", chapter: 86, verse: 5 },
+    { book: "Psalms", chapter: 92, verse: 1 },
+    { book: "Psalms", chapter: 107, verse: 1 },
+    { book: "Psalms", chapter: 119, verse: 105 },
+    { book: "Proverbs", chapter: 15, verse: 33 },
+    { book: "Proverbs", chapter: 18, verse: 10 },
+    { book: "Psalms", chapter: 66, verse: 20 },
+    { book: "Psalms", chapter: 84, verse: 11 },
+    { book: "Psalms", chapter: 103, verse: 1 },
+    { book: "Psalms", chapter: 103, verse: 8 },
+    { book: "Psalms", chapter: 111, verse: 10 },
+    { book: "Psalms", chapter: 125, verse: 1 },
+    { book: "Psalms", chapter: 138, verse: 8 },
+  ];
+  const idx = dayOfYear % dailyVerses.length;
+  const ref = dailyVerses[idx];
+  try {
+    const res = await fetch(
+      `${BIBLE_API}/${encodeURIComponent(ref.book)}+${ref.chapter}?translation=${translation}`
+    );
+    if (!res.ok) {
+      return c.json({ text: "The Lord is my shepherd; I shall not want.", reference: "Psalms 23:1 (KJV)", translation });
+    }
+    const data = await res.json();
+    const verse = (data.verses || []).find((v: { verse: number }) => v.verse === ref.verse);
+    return c.json({
+      text: verse ? verse.text : (data.verses?.[0]?.text || ""),
+      reference: `${ref.book} ${ref.chapter}:${ref.verse}`,
+      translation,
+    });
+  } catch {
+    return c.json({ text: "The Lord is my shepherd; I shall not want.", reference: "Psalms 23:1 (KJV)", translation });
+  }
+});
+
 bibleRoutes.get("/search", async (c) => {
   const query = c.req.query("q");
   const translation = (c.req.query("translation") || "kjv") as string;

@@ -15,9 +15,12 @@ export default function ScriptureSection() {
   const [scripture, setScripture] = useState<{ text: string; reference: string } | null>(null);
 
   useEffect(() => {
-    api.bible.dailyVerse().then((data) => {
+    api.bible.dailyVerse(activeTranslation).then((data) => {
       setScripture({ text: data.text, reference: data.reference });
     });
+  }, [activeTranslation]);
+
+  useEffect(() => {
     api.bible.books().then((data) => {
       const translationNames = data.translationNames || {};
       setTranslations(
