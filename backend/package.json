@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "build": "tsc",
-    "seed": "tsx src/lib/seed.ts",
+    "seed": "tsx --env-file=.env src/lib/seed.ts",
     "migrate": "drizzle-kit push",
     "migrate:generate": "drizzle-kit generate",
     "deploy": "wrangler deploy"
