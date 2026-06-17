@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "npx wrangler pages dev --proxy 3000",
+    "dev:api": "npx wrangler pages dev --proxy 3000 --ip 127.0.0.1 --compatibility-date=2025-03-01",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -1,17 +1,10 @@
-name = "hkn-api"
+# This wrangler.toml is for local dev only.
+# Production API runs as Cloudflare Pages Functions via functions/api/[[path]].ts
+name = "hkn-api-dev"
 main = "src/index.ts"
 compatibility_date = "2025-03-01"
 
 [vars]
-JWT_SECRET = "change-me-in-production"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "hkn"
-database_id = ""
-
-[env.production]
-vars = { JWT_SECRET = "" }
-
-[env.production.triggers]
-crons = ["0 0 * * *"]
+JWT_SECRET = "dev-secret-change-in-production"
+SUPABASE_URL = ""
+SUPABASE_SERVICE_KEY = ""
