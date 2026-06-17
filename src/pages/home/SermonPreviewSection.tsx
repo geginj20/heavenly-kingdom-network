@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Clock, Bookmark, Play, Loader2 } from "lucide-react";
+import { Search, Clock, Bookmark, Play } from "lucide-react";
 import ScrollReveal from "../../components/ScrollReveal";
 import { api } from "../../lib/api";
 import type { Sermon } from "../../data/demoData";
@@ -75,8 +75,17 @@ export default function SermonPreviewSection() {
         </ScrollReveal>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-[#d4af37] animate-spin" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden border border-[#0c1b33]/5">
+                <div className="aspect-video bg-[#e6eef7] animate-pulse" />
+                <div className="p-4 space-y-3">
+                  <div className="h-3 w-16 bg-[#e6eef7] rounded animate-pulse" />
+                  <div className="h-4 w-full bg-[#e6eef7] rounded animate-pulse" />
+                  <div className="h-4 w-3/4 bg-[#e6eef7] rounded animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredSermons.length === 0 ? (
           <div className="text-center py-12">

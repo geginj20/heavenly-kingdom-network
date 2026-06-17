@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { HandHeart, MessageCircle, Send, User, Loader2 } from "lucide-react";
+import { HandHeart, MessageCircle, Send, User } from "lucide-react";
 import { motion } from "framer-motion";
 import ScrollReveal from "../../components/ScrollReveal";
 import { api } from "../../lib/api";
@@ -115,8 +115,24 @@ export default function PrayerPreviewSection() {
 
           <div className="lg:col-span-3 space-y-5">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 text-[#d4af37] animate-spin" />
+              <div className="space-y-4 py-12">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="bg-[#f5f0e8] rounded-2xl p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-[#ddd5c8] animate-pulse" />
+                        <div className="space-y-2">
+                          <div className="h-3 w-20 bg-[#ddd5c8] rounded animate-pulse" />
+                          <div className="h-3 w-14 bg-[#ddd5c8] rounded animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 w-full bg-[#ddd5c8] rounded animate-pulse" />
+                      <div className="h-3 w-4/6 bg-[#ddd5c8] rounded animate-pulse" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : prayers.length === 0 ? (
               <div className="text-center py-12">

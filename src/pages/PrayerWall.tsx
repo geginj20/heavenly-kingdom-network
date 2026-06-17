@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import SEO from "../components/SEO";
 import { z } from "zod";
 import {
   HandHeart,
@@ -31,9 +32,10 @@ export default function PrayerWall() {
   const [prayers, setPrayers] = useState<PrayerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All Prayers");
-  const [categories, setCategories] = useState<string[]>([]);
   const [expandedPrayer, setExpandedPrayer] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
   const containerRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -110,9 +112,11 @@ export default function PrayerWall() {
     activeCategory === "All Prayers"
       ? prayers
       : prayers.filter((p) => p.category === activeCategory);
+  const paginatedPrayers = filteredPrayers.slice(0, visibleCount);
 
   return (
     <div className="pt-[72px] min-h-screen bg-[#e6eef7]">
+      <SEO title="Prayer Wall" description="Share your prayer requests and pray for others. Join our global prayer community." />
       <div className="bg-[#0c1b33] py-16 px-4">
         <div className="container-main mx-auto text-center">
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-3">
@@ -141,7 +145,7 @@ export default function PrayerWall() {
                     return (
                       <button
                         key={cat}
-                        onClick={() => setActiveCategory(cat)}
+                        onClick={() => { setActiveCategory(cat); setVisibleCount(10); }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                           activeCategory === cat
                             ? "bg-[#d4af37]/10 text-[#8b5e3c] font-medium"
@@ -211,8 +215,28 @@ export default function PrayerWall() {
 
           <div className="lg:col-span-3 space-y-5">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin" />
+              <div className="space-y-5 py-20">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#e6eef7] animate-pulse" />
+                        <div className="space-y-2">
+                          <div className="h-3 w-24 bg-[#e6eef7] rounded animate-pulse" />
+                          <div className="h-3 w-16 bg-[#e6eef7] rounded animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="h-3 w-full bg-[#e6eef7] rounded animate-pulse" />
+                      <div className="h-3 w-5/6 bg-[#e6eef7] rounded animate-pulse" />
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="h-8 w-16 bg-[#e6eef7] rounded-lg animate-pulse" />
+                      <div className="h-8 w-16 bg-[#e6eef7] rounded-lg animate-pulse" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredPrayers.length === 0 ? (
               <div className="text-center py-20">
@@ -222,7 +246,7 @@ export default function PrayerWall() {
               </div>
             ) : (
               <AnimatePresence>
-                {filteredPrayers.map((prayer, index) => (
+                {paginatedPrayers.map((prayer, index) => (
                   <motion.div
                     key={prayer.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -317,6 +341,16 @@ export default function PrayerWall() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+            )}
+            {visibleCount < filteredPrayers.length && (
+              <div className="text-center pt-4">
+                <button
+                  onClick={() => setVisibleCount(c => c + 10)}
+                  className="px-6 py-3 rounded-full bg-[#0c1b33] text-white text-sm font-medium hover:bg-[#162a4a] transition-all"
+                >
+                  Load More ({filteredPrayers.length - visibleCount} remaining)
+                </button>
+              </div>
             )}
           </div>
         </div>

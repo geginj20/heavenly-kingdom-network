@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -15,13 +15,16 @@ import {
   ChevronDown,
   TrendingUp,
   TrendingDown,
-  Eye,
   Plus,
   X,
+  Pencil,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { adminStats, adminPrayers, demoEvents } from "../data/demoData";
+import type { Sermon, Event } from "../data/demoData";
+import { adminStats as fallbackStats, adminPrayers as fallbackPrayers, demoSermons as fallbackSermons, demoEvents as fallbackEvents } from "../data/demoData";
 import { useToast } from "../lib/toast";
+import SEO from "../components/SEO";
+import { api } from "../lib/api";
 
 type Tab = "overview" | "users" | "prayers" | "sermons" | "events" | "donations" | "settings";
 
@@ -41,24 +44,184 @@ const statusColors: Record<string, string> = {
   flagged: "bg-red-500/20 text-red-400",
 };
 
+type AdminPrayer = { id: number; text: string; category: string; author: string; date: string; status: string };
+
+function normalizePrayer(p: Record<string, unknown>): AdminPrayer {
+  return {
+    id: Number(p.id) || 0,
+    text: String(p.text || ""),
+    category: String(p.category || ""),
+    author: String(p.name || "Anonymous"),
+    date: p.created_at ? new Date(String(p.created_at)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+    status: String(p.status || "pending"),
+  };
+}
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [prayerFilter, setPrayerFilter] = useState("all");
   const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [showSermonModal, setShowSermonModal] = useState(false);
+  const [editingSermon, setEditingSermon] = useState<Sermon | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState(fallbackStats);
+  const [prayers, setPrayers] = useState<AdminPrayer[]>(fallbackPrayers.map(normalizePrayer));
+  const [sermons, setSermons] = useState<Sermon[]>(fallbackSermons);
+  const [events, setEvents] = useState(fallbackEvents);
+  const [adminUsers, setAdminUsers] = useState<{ id: number; name: string; email: string; role: string; status: string }[]>([]);
+  const [donations, setDonations] = useState<{ name: string; amount: number; date: string; recurring: boolean }[]>([]);
   const { showToast } = useToast();
 
-  const filteredPrayers = adminPrayers.filter((p) => {
+  const filteredPrayers = prayers.filter((p) => {
     if (prayerFilter === "all") return true;
     return p.status === prayerFilter;
   });
 
-  const handlePrayerAction = (action: string) => {
-    showToast(`Prayer request ${action}!`, "success");
+  useEffect(() => { (async () => {
+    const data = await api.admin.stats();
+    setStats(data);
+  })(); }, []);
+
+  useEffect(() => { (async () => {
+    const data = await api.admin.prayers(prayerFilter);
+    setPrayers(data.map(normalizePrayer));
+  })(); }, [prayerFilter]);
+
+  useEffect(() => { (async () => {
+    try {
+      const data = await api.events.list();
+      setEvents(data);
+    } catch { setEvents(fallbackEvents); }
+  })(); }, []);
+
+  useEffect(() => { (async () => {
+    const data = await api.admin.users();
+    setAdminUsers(data);
+  })(); }, []);
+
+  useEffect(() => { (async () => {
+    const data = await api.admin.donations();
+    setDonations(data);
+  })(); }, []);
+
+  useEffect(() => { (async () => {
+    const data = await api.sermons.list();
+    setSermons(data);
+  })(); }, []);
+
+  const handlePrayerAction = async (id: number, action: string) => {
+    try {
+      if (action === "deleted") {
+        await api.admin.deletePrayer(id);
+        setPrayers(p => p.filter(p => p.id !== id));
+      } else {
+        await api.admin.updatePrayerStatus(id, action);
+        setPrayers(p => p.map(p => p.id === id ? { ...p, status: action } : p));
+      }
+      showToast(`Prayer request ${action}!`, "success");
+    } catch {
+      showToast("Failed to update prayer request.", "error");
+    }
+  };
+
+  const handleSermonSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const data = {
+      title: fd.get("title") as string,
+      speaker: fd.get("speaker") as string,
+      ministry: fd.get("ministry") as string || "",
+      duration: fd.get("duration") as string,
+      category: fd.get("category") as string,
+      thumbnail: (fd.get("thumbnail") as string) || "/images/sermon-default.jpg",
+      date: (fd.get("date") as string) || new Date().toISOString().split("T")[0],
+    };
+    try {
+      if (editingSermon) {
+        await api.sermons.update(editingSermon.id, data);
+        showToast("Sermon updated!", "success");
+      } else {
+        await api.sermons.create(data);
+        showToast("Sermon created!", "success");
+      }
+      setShowSermonModal(false);
+      setEditingSermon(null);
+      const list = await api.sermons.list();
+      setSermons(list);
+    } catch {
+      showToast("Failed to save sermon.", "error");
+    }
+  };
+
+  const handleDeleteSermon = async (id: string) => {
+    if (!confirm("Delete this sermon?")) return;
+    try {
+      await api.sermons.delete(id);
+      setSermons(p => p.filter(s => s.id !== id));
+      showToast("Sermon deleted!", "success");
+    } catch {
+      showToast("Failed to delete sermon.", "error");
+    }
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await api.events.delete(id);
+      setEvents(p => p.filter(e => e.id !== id));
+      showToast("Event deleted!", "success");
+    } catch {
+      showToast("Failed to delete event.", "error");
+    }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    try {
+      await api.events.create({
+        title: fd.get("title") as string,
+        date: fd.get("date") as string,
+        time: fd.get("time") as string,
+        location: fd.get("location") as string,
+        description: fd.get("description") as string,
+      });
+      showToast("Event created!", "success");
+      setShowEventModal(false);
+      const data = await api.events.list();
+      setEvents(data);
+    } catch {
+      showToast("Failed to create event.", "error");
+    }
+  };
+
+  const handleEditEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    try {
+      await api.events.update(editingEvent.id, {
+        title: fd.get("title") as string,
+        date: fd.get("date") as string,
+        time: fd.get("time") as string,
+        location: fd.get("location") as string,
+        description: fd.get("description") as string,
+      });
+      showToast("Event updated!", "success");
+      setEditingEvent(null);
+      const data = await api.events.list();
+      setEvents(data);
+    } catch {
+      showToast("Failed to update event.", "error");
+    }
   };
 
   return (
     <div className="pt-[72px] min-h-screen bg-[#0c1b33]">
+      <SEO title="Admin Dashboard" description="Manage sermons, events, prayer requests, users, and donations." />
       <div className="flex">
         {/* Sidebar */}
         <aside className="hidden lg:block w-[260px] min-h-[calc(100vh-72px)] bg-[#0f2240] border-r border-white/5">
@@ -88,7 +251,7 @@ export default function AdminDashboard() {
                   {item.label}
                   {item.id === "prayers" && (
                     <span className="ml-auto px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs">
-                      {adminStats.pendingPrayers}
+                      {stats.pendingPrayers}
                     </span>
                   )}
                 </button>
@@ -130,28 +293,28 @@ export default function AdminDashboard() {
                 {[
                   {
                     label: "Total Users",
-                    value: adminStats.totalUsers.toLocaleString(),
+                    value: stats.totalUsers.toLocaleString(),
                     icon: Users,
                     trend: "+12%",
                     up: true,
                   },
                   {
                     label: "Prayer Requests",
-                    value: adminStats.totalPrayers.toLocaleString(),
+                    value: stats.totalPrayers.toLocaleString(),
                     icon: HandHeart,
                     trend: "+8%",
                     up: true,
                   },
                   {
                     label: "Sermons",
-                    value: adminStats.totalSermons.toString(),
+                    value: stats.totalSermons.toString(),
                     icon: Headphones,
                     trend: "+5%",
                     up: true,
                   },
                   {
                     label: "Monthly Giving",
-                    value: `$${adminStats.monthlyGiving.toLocaleString()}`,
+                    value: `$${stats.monthlyGiving.toLocaleString()}`,
                     icon: DollarSign,
                     trend: "-3%",
                     up: false,
@@ -194,7 +357,7 @@ export default function AdminDashboard() {
                     Recent Prayer Requests
                   </h3>
                   <div className="space-y-3">
-                    {adminPrayers.slice(0, 5).map((prayer) => (
+                    {prayers.slice(0, 5).map((prayer) => (
                       <div
                         key={prayer.id}
                         className="flex items-center gap-3 p-3 rounded-lg bg-white/5"
@@ -217,7 +380,7 @@ export default function AdminDashboard() {
                     Upcoming Events
                   </h3>
                   <div className="space-y-3">
-                    {demoEvents.map((event) => (
+                    {events.map((event) => (
                       <div
                         key={event.id}
                         className="flex items-center gap-3 p-3 rounded-lg bg-white/5"
@@ -311,21 +474,21 @@ export default function AdminDashboard() {
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => handlePrayerAction("approved")}
+                                onClick={() => handlePrayerAction(prayer.id, "approved")}
                                 className="p-1.5 rounded-lg hover:bg-green-500/20 text-green-400 transition-colors"
                                 title="Approve"
                               >
                                 <CheckCircle className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handlePrayerAction("flagged")}
+                                onClick={() => handlePrayerAction(prayer.id, "flagged")}
                                 className="p-1.5 rounded-lg hover:bg-amber-500/20 text-amber-400 transition-colors"
                                 title="Flag"
                               >
                                 <Flag className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handlePrayerAction("deleted")}
+                                onClick={() => handlePrayerAction(prayer.id, "deleted")}
                                 className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
                                 title="Delete"
                               >
@@ -350,19 +513,12 @@ export default function AdminDashboard() {
                   User Management
                 </h3>
                 <p className="text-sm text-white/40 mt-1">
-                  {adminStats.totalUsers.toLocaleString()} total users
+                  {stats.totalUsers.toLocaleString()} total users
                 </p>
               </div>
               <div className="p-5">
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { name: "Sarah Mitchell", email: "sarah@email.com", role: "Pastor", status: "active" },
-                    { name: "James Cooper", email: "james@email.com", role: "Ministry Leader", status: "active" },
-                    { name: "David Kim", email: "david@email.com", role: "Member", status: "active" },
-                    { name: "Maria Lopez", email: "maria@email.com", role: "Member", status: "inactive" },
-                    { name: "Pastor Robert", email: "robert@church.org", role: "Admin", status: "active" },
-                    { name: "Amanda Foster", email: "amanda@email.com", role: "Ministry Leader", status: "active" },
-                  ].map((user, i) => (
+                  {adminUsers.map((user, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, y: 10 }}
@@ -415,7 +571,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {demoEvents.map((event, i) => (
+                {events.map((event, i) => (
                   <motion.div
                     key={event.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -432,10 +588,10 @@ export default function AdminDashboard() {
                         {event.month} {event.day}, 2026 — {event.time} {event.timezone}
                       </p>
                       <div className="flex items-center gap-2">
-                        <button className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                          <Eye className="w-3.5 h-3.5 text-white/60" />
+                        <button onClick={() => setEditingEvent(event)} className="p-1.5 rounded-lg bg-white/5 hover:bg-blue-500/20 transition-colors">
+                          <Pencil className="w-3.5 h-3.5 text-blue-400" />
                         </button>
-                        <button className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                        <button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                           <Trash2 className="w-3.5 h-3.5 text-red-400" />
                         </button>
                       </div>
@@ -448,24 +604,56 @@ export default function AdminDashboard() {
 
           {/* Sermons Tab */}
           {activeTab === "sermons" && (
-            <div className="bg-[#0f2240] rounded-xl border border-white/5 p-6">
-              <h3 className="font-display text-lg font-semibold text-white mb-4">
-                Sermon Management
-              </h3>
-              <p className="text-white/40 text-sm">
-                {adminStats.totalSermons} sermons published. Use the Sermons page to browse and manage content.
-              </p>
-              <div className="mt-6 grid sm:grid-cols-3 gap-4">
-                {[
-                  { label: "Published", value: 142, color: "text-green-400" },
-                  { label: "Drafts", value: 8, color: "text-amber-400" },
-                  { label: "Scheduled", value: 6, color: "text-blue-400" },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-white/5 rounded-lg p-4 text-center">
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-xs text-white/40 mt-1">{stat.label}</p>
-                  </div>
-                ))}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-semibold text-white">Sermon Management</h3>
+                <button
+                  onClick={() => { setEditingSermon(null); setShowSermonModal(true); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#d4af37] text-[#0c1b33] text-sm font-medium hover:brightness-110 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Sermon
+                </button>
+              </div>
+
+              <div className="bg-[#0f2240] rounded-xl border border-white/5 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Title</th>
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Speaker</th>
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Category</th>
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Duration</th>
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Date</th>
+                        <th className="text-left px-4 py-3 text-xs font-medium text-white/40 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sermons.map((sermon) => (
+                        <tr key={sermon.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                          <td className="px-4 py-3 text-sm text-white/70 max-w-xs truncate">{sermon.title}</td>
+                          <td className="px-4 py-3 text-sm text-white/60">{sermon.speaker}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 rounded-full bg-[#d4af37]/10 text-[#d4af37] text-xs">{sermon.category}</span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-white/60">{sermon.duration}</td>
+                          <td className="px-4 py-3 text-sm text-white/60">{sermon.date}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => { setEditingSermon(sermon); setShowSermonModal(true); }} className="p-1.5 rounded-lg hover:bg-blue-500/20 text-blue-400 transition-colors" title="Edit">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDeleteSermon(sermon.id)} className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors" title="Delete">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -475,7 +663,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                  { label: "This Month", value: `$${adminStats.monthlyGiving.toLocaleString()}`, color: "text-[#d4af37]" },
+                  { label: "This Month", value: `$${stats.monthlyGiving.toLocaleString()}`, color: "text-[#d4af37]" },
                   { label: "Total YTD", value: "$142,380", color: "text-green-400" },
                   { label: "Donors", value: "234", color: "text-blue-400" },
                 ].map((stat) => (
@@ -498,13 +686,7 @@ export default function AdminDashboard() {
                   </h3>
                 </div>
                 <div className="divide-y divide-white/5">
-                  {[
-                    { name: "Anonymous", amount: 100, date: "Jun 15, 2026", recurring: true },
-                    { name: "Sarah M.", amount: 50, date: "Jun 14, 2026", recurring: false },
-                    { name: "James K.", amount: 250, date: "Jun 13, 2026", recurring: true },
-                    { name: "Living Faith Church", amount: 500, date: "Jun 12, 2026", recurring: false },
-                    { name: "Maria L.", amount: 25, date: "Jun 11, 2026", recurring: true },
-                  ].map((donation, i) => (
+                  {donations.map((donation, i) => (
                     <div key={i} className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-[#d4af37]/10 flex items-center justify-center">
@@ -611,17 +793,11 @@ export default function AdminDashboard() {
                   <X className="w-5 h-5 text-white/60" />
                 </button>
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  showToast("Event created!", "success");
-                  setShowEventModal(false);
-                }}
-                className="space-y-4"
-              >
+              <form onSubmit={handleCreateEvent} className="space-y-4">
                 <div>
                   <label className="block text-sm text-white/60 mb-1">Event Title</label>
                   <input
+                    name="title"
                     type="text"
                     placeholder="Enter event title"
                     className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
@@ -631,6 +807,7 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block text-sm text-white/60 mb-1">Date</label>
                     <input
+                      name="date"
                       type="date"
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                     />
@@ -638,6 +815,7 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block text-sm text-white/60 mb-1">Time</label>
                     <input
+                      name="time"
                       type="time"
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                     />
@@ -646,6 +824,7 @@ export default function AdminDashboard() {
                 <div>
                   <label className="block text-sm text-white/60 mb-1">Location</label>
                   <input
+                    name="location"
                     type="text"
                     placeholder="Physical location or 'Online'"
                     className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
@@ -654,6 +833,7 @@ export default function AdminDashboard() {
                 <div>
                   <label className="block text-sm text-white/60 mb-1">Description</label>
                   <textarea
+                    name="description"
                     rows={3}
                     placeholder="Event description..."
                     className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none"
@@ -661,6 +841,187 @@ export default function AdminDashboard() {
                 </div>
                 <button type="submit" className="w-full btn-gold">
                   Create Event
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Event Modal */}
+      <AnimatePresence>
+        {editingEvent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1001] flex items-center justify-center p-4 bg-black/50"
+            onClick={() => setEditingEvent(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0f2240] rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-white/5"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-xl font-semibold text-white">Edit Event</h3>
+                <button
+                  onClick={() => setEditingEvent(null)}
+                  className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/60" />
+                </button>
+              </div>
+              <form onSubmit={handleEditEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Event Title</label>
+                  <input
+                    name="title"
+                    type="text"
+                    defaultValue={editingEvent.title}
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Date</label>
+                    <input
+                      name="date"
+                      type="date"
+                      defaultValue={editingEvent.date}
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Time</label>
+                    <input
+                      name="time"
+                      type="time"
+                      defaultValue={editingEvent.time}
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Location</label>
+                  <input
+                    name="location"
+                    type="text"
+                    defaultValue={editingEvent.location}
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    rows={3}
+                    defaultValue={editingEvent.description}
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none"
+                  />
+                </div>
+                <button type="submit" className="w-full btn-gold">
+                  Save Changes
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create / Edit Sermon Modal */}
+      <AnimatePresence>
+        {showSermonModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1001] flex items-center justify-center p-4 bg-black/50"
+            onClick={() => { setShowSermonModal(false); setEditingSermon(null); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0f2240] rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-white/5"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-xl font-semibold text-white">
+                  {editingSermon ? "Edit Sermon" : "Create Sermon"}
+                </h3>
+                <button
+                  onClick={() => { setShowSermonModal(false); setEditingSermon(null); }}
+                  className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/60" />
+                </button>
+              </div>
+              <form onSubmit={handleSermonSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Title</label>
+                  <input
+                    name="title"
+                    type="text"
+                    defaultValue={editingSermon?.title}
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Speaker</label>
+                    <input
+                      name="speaker"
+                      type="text"
+                      defaultValue={editingSermon?.speaker}
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Ministry</label>
+                    <input
+                      name="ministry"
+                      type="text"
+                      defaultValue={editingSermon?.ministry}
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Duration</label>
+                    <input
+                      name="duration"
+                      type="text"
+                      defaultValue={editingSermon?.duration}
+                      placeholder="e.g. 42 min"
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/60 mb-1">Category</label>
+                    <input
+                      name="category"
+                      type="text"
+                      defaultValue={editingSermon?.category}
+                      placeholder="e.g. Faith"
+                      className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">Thumbnail URL</label>
+                  <input
+                    name="thumbnail"
+                    type="text"
+                    defaultValue={editingSermon?.thumbnail}
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                  />
+                </div>
+                <button type="submit" className="w-full btn-gold">
+                  {editingSermon ? "Save Changes" : "Create Sermon"}
                 </button>
               </form>
             </motion.div>

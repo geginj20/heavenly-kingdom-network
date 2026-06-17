@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEO from "../components/SEO";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,7 +9,6 @@ import {
   Video,
   Users,
   ChevronDown,
-  Loader2,
 } from "lucide-react";
 import {
   format,
@@ -78,6 +78,7 @@ export default function Events() {
 
   return (
     <div className="pt-[72px] min-h-screen bg-white">
+      <SEO title="Events" description="Join our global events — worship nights, conferences, youth revivals, and prayer summits." />
       <div className="bg-[#0c1b33] py-12 px-4">
         <div className="container-main mx-auto text-center">
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-3">
@@ -91,8 +92,34 @@ export default function Events() {
 
       <div className="container-main mx-auto px-4 sm:px-6 py-10">
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin" />
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#0c1b33]/5 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="h-8 w-8 bg-[#e6eef7] rounded-lg animate-pulse" />
+                  <div className="h-6 w-40 bg-[#e6eef7] rounded animate-pulse" />
+                  <div className="h-8 w-8 bg-[#e6eef7] rounded-lg animate-pulse" />
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 35 }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-[#e6eef7] rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 border border-[#0c1b33]/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-[#e6eef7] rounded-xl animate-pulse" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-3 w-3/4 bg-[#e6eef7] rounded animate-pulse" />
+                      <div className="h-3 w-1/2 bg-[#e6eef7] rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid lg:grid-cols-3 gap-8">

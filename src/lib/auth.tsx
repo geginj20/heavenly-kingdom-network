@@ -144,12 +144,13 @@ function GoogleSignInButton({ onSuccess }: { onSuccess: (token: string) => void 
 
 export function AdminGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading, login, register, loginWithGoogle } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   if (loading) {
     return (
@@ -184,6 +185,64 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     const ok = await loginWithGoogle(token);
     if (!ok) setError("Google sign-in failed");
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+    try {
+      await api.auth.forgotPassword(email);
+      setResetSent(true);
+    } catch {
+      setError("Failed to send reset email.");
+    }
+    setSubmitting(false);
+  };
+
+  if (mode === "forgot") {
+    return (
+      <div className="min-h-screen bg-[#0c1b33] flex items-center justify-center p-4">
+        <div className="bg-[#0f2240] rounded-2xl p-8 max-w-sm w-full border border-white/5">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-[#d4af37]/20 flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-8 h-8 text-[#d4af37]" />
+            </div>
+            <h1 className="font-display text-2xl font-bold text-white mb-2">Reset Password</h1>
+            <p className="text-sm text-white/50">Enter your email to receive a reset link.</p>
+          </div>
+          {resetSent ? (
+            <div className="text-center">
+              <p className="text-green-400 text-sm mb-4">If that email is registered, a reset link has been sent.</p>
+              <button onClick={() => { setMode("login"); setResetSent(false); setError(""); }} className="text-[#d4af37] hover:underline text-sm">
+                Back to Sign In
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37] text-sm"
+                />
+              </div>
+              {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+              <button type="submit" disabled={submitting} className="w-full btn-gold flex items-center justify-center gap-2 disabled:opacity-50">
+                {submitting ? <div className="w-4 h-4 border-2 border-[#0c1b33] border-t-transparent rounded-full animate-spin" /> : "Send Reset Link"}
+              </button>
+              <p className="text-center text-xs text-white/30 mt-2">
+                Remember your password?{" "}
+                <button onClick={() => { setMode("login"); setError(""); }} className="text-[#d4af37] hover:underline">Sign in</button>
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0c1b33] flex items-center justify-center p-4">
@@ -271,6 +330,12 @@ export function AdminGuard({ children }: { children: ReactNode }) {
             )}
           </button>
         </form>
+
+        {mode === "login" && (
+          <button onClick={() => { setMode("forgot"); setError(""); }} className="block mx-auto mt-3 text-xs text-white/40 hover:text-[#d4af37] transition-colors">
+            Forgot Password?
+          </button>
+        )}
 
         <p className="text-center text-xs text-white/30 mt-5">
           {mode === "login" ? (

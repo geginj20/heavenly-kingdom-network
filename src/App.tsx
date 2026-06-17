@@ -14,6 +14,7 @@ const BibleReader = lazy(() => import("./pages/BibleReader"));
 const Sermons = lazy(() => import("./pages/Sermons"));
 const Events = lazy(() => import("./pages/Events"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const DonationHistory = lazy(() => import("./pages/DonationHistory"));
 
 function PageLoader() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
                   <Route path="/bible/:book/:chapter" element={<BibleReader />} />
                   <Route path="/sermons" element={<Sermons />} />
                   <Route path="/events" element={<Events />} />
+                  <Route path="/donations" element={<DonationHistory />} />
                   <Route
                     path="/admin"
                     element={

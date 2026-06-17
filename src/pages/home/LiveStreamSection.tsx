@@ -1,29 +1,16 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Play, Radio, Users, MessageCircle, Clock } from "lucide-react";
 import ScrollReveal from "../../components/ScrollReveal";
-
-const upcomingStreams = [
-  {
-    id: "1",
-    title: "Morning Devotional",
-    host: "Pastor Sarah Williams",
-    time: "Tomorrow, 7:00 AM EST",
-  },
-  {
-    id: "2",
-    title: "Bible Study: Book of Romans",
-    host: "Dr. Michael Johnson",
-    time: "Wed, 6:30 PM EST",
-  },
-  {
-    id: "3",
-    title: "Youth Night Live",
-    host: "Youth Ministry Team",
-    time: "Fri, 7:00 PM PST",
-  },
-];
+import { api } from "../../lib/api";
 
 export default function LiveStreamSection() {
+  const [upcomingStreams, setUpcomingStreams] = useState<{ id: string; title: string; host: string; time: string }[]>([]);
+
+  useEffect(() => { (async () => {
+    const data = await api.streams.upcoming();
+    setUpcomingStreams(data);
+  })(); }, []);
   return (
     <section
       className="section-padding bg-gradient-to-br from-[#0c1b33] via-[#162a4a] to-[#1a3a5c]"

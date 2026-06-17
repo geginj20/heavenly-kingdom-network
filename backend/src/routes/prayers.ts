@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
+import { rateLimit } from "../lib/rateLimiter";
 
 export const prayerRoutes = new Hono();
 
@@ -23,7 +24,7 @@ prayerRoutes.get("/", async (c) => {
   return c.json(data);
 });
 
-prayerRoutes.post("/", zValidator("json", createPrayerSchema), async (c) => {
+prayerRoutes.post("/", rateLimit, zValidator("json", createPrayerSchema), async (c) => {
   const supabase = getSupabase();
   const data = c.req.valid("json");
   const { data: prayer, error } = await supabase.from("prayers").insert({
@@ -61,14 +62,19 @@ prayerRoutes.get("/:id/comments", async (c) => {
   return c.json(data);
 });
 
-prayerRoutes.post("/:id/comments", async (c) => {
+const commentSchema = z.object({
+  name: z.string().max(50).optional().default(""),
+  text: z.string().min(1).max(500),
+});
+
+prayerRoutes.post("/:id/comments", zValidator("json", commentSchema), async (c) => {
   const supabase = getSupabase();
   const prayerId = Number(c.req.param("id"));
-  const body = await c.req.json();
+  const { name, text } = c.req.valid("json");
   const { data: comment, error } = await supabase.from("prayer_comments").insert({
     prayer_id: prayerId,
-    name: body.name || "Anonymous",
-    text: body.text,
+    name: name || "Anonymous",
+    text,
   }).select().single();
   if (error) return c.json({ error: error.message }, 500);
 
