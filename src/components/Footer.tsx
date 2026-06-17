@@ -47,8 +47,7 @@ export default function Footer() {
             </Link>
             <p className="text-white/60 text-sm leading-relaxed max-w-sm mb-6">
               A global, open-source platform connecting Christian believers worldwide through
-              prayer, scripture, and fellowship — built on a $0/month infrastructure that
-              serves the Kingdom.
+              prayer, scripture, and fellowship.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -133,7 +132,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/40 flex items-center gap-1">
-            &copy; 2026 Heavenly Kingdom Network. Open Source, Global, Forever Free.
+            &copy; 2026 Heavenly Kingdom Network.
             <Heart className="w-3 h-3 text-red-500 fill-red-500" />
           </p>
           <div className="flex items-center gap-4 text-xs text-white/40">
