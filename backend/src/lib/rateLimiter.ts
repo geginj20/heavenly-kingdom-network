@@ -29,7 +29,6 @@ export const rateLimit = createMiddleware(async (c, next) => {
   c.res.headers.set("X-RateLimit-Remaining", String(Math.max(0, MAX_REQUESTS - entry.count)));
 
   if (entry.count > MAX_REQUESTS) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return c.json({ error: "Too many requests. Please try again later." }, 429);
   }
 
@@ -49,7 +48,6 @@ export const strictRateLimit = createMiddleware(async (c, next) => {
 
   entry.count++;
   if (entry.count > 5) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return c.json({ error: "Too many requests. Please try again later." }, 429);
   }
 
