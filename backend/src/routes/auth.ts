@@ -117,9 +117,9 @@ authRoutes.post("/reset-password", zValidator("json", z.object({
   password: z.string().min(6),
   token: z.string().min(1),
 })), async (c) => {
-  const { password, token } = c.req.valid("json");
+  const { password } = c.req.valid("json");
   const supabase = getSupabase();
-  const { data, error } = await supabase.auth.updateUser({ password });
+  const { error } = await supabase.auth.updateUser({ password });
   if (error) return c.json({ error: error.message }, 400);
   return c.json({ ok: true, message: "Password updated successfully." });
 });
