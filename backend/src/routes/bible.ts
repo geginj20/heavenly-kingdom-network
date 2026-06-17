@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { getDb } from "../db";
-import { bibleNotes } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { getSupabase } from "../lib/supabase";
 
 export const bibleRoutes = new Hono();
 
@@ -39,21 +37,23 @@ bibleRoutes.get("/verses/:book/:chapter", async (c) => {
 });
 
 bibleRoutes.post("/notes", async (c) => {
-  const db = getDb();
+  const supabase = getSupabase();
   const body = await c.req.json();
-  const [note] = await db.insert(bibleNotes).values({
-    userId: body.userId,
+  const { data: note, error } = await supabase.from("bible_notes").insert({
+    user_id: body.userId,
     book: body.book,
     verse: body.verse,
     text: body.text,
-  }).returning();
+  }).select().single();
+  if (error) return c.json({ error: error.message }, 500);
   return c.json(note, 201);
 });
 
 bibleRoutes.get("/notes", async (c) => {
-  const db = getDb();
+  const supabase = getSupabase();
   const userId = c.req.query("userId");
   if (!userId) return c.json([]);
-  const notes = await db.select().from(bibleNotes).where(eq(bibleNotes.userId, userId));
-  return c.json(notes);
+  const { data, error } = await supabase.from("bible_notes").select("*").eq("user_id", userId);
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json(data);
 });

@@ -1,9 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
-import { getDb } from "../db";
-import { users } from "../db/schema";
 import { getSupabase } from "../lib/supabase";
 import { signToken, verifyToken } from "../lib/jwt";
 
@@ -27,13 +24,13 @@ const googleSchema = z.object({
 authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
   const { email, password } = c.req.valid("json");
 
-  const { data: authUser, error } = await getSupabase().auth.signInWithPassword({ email, password });
+  const supabase = getSupabase();
+  const { data: authUser, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error || !authUser.user) {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
-  const db = getDb();
-  const [user] = await db.select().from(users).where(eq(users.id, authUser.user.id));
+  const { data: user } = await supabase.from("users").select("*").eq("id", authUser.user.id).single();
   if (!user) {
     return c.json({ error: "User not found" }, 404);
   }
@@ -48,7 +45,8 @@ authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
 authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
   const { name, email, password } = c.req.valid("json");
 
-  const { data: authUser, error } = await getSupabase().auth.signUp({ email, password });
+  const supabase = getSupabase();
+  const { data: authUser, error } = await supabase.auth.signUp({ email, password });
   if (error) {
     if (error.message.includes("already")) {
       return c.json({ error: "Email already registered" }, 409);
@@ -59,8 +57,10 @@ authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
     return c.json({ error: "Registration failed" }, 500);
   }
 
-  const db = getDb();
-  const [user] = await db.insert(users).values({ id: authUser.user.id, name, email, role: "member" }).returning();
+  await supabase.from("users").insert({ id: authUser.user.id, name, email, role: "member" });
+  const { data: user } = await supabase.from("users").select("*").eq("id", authUser.user.id).single();
+
+  if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
   const token = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
   return c.json({
@@ -70,9 +70,10 @@ authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
 });
 
 authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
+  const supabase = getSupabase();
   const { token: idToken } = c.req.valid("json");
 
-  const { data, error } = await getSupabase().auth.signInWithIdToken({
+  const { data, error } = await supabase.auth.signInWithIdToken({
     provider: "google",
     token: idToken,
   });
@@ -81,21 +82,18 @@ authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
   }
 
   const authUser = data.user;
-  const db = getDb();
-  let [user] = await db.select().from(users).where(eq(users.id, authUser.id));
+  let { data: user } = await supabase.from("users").select("*").eq("id", authUser.id).single();
   if (!user) {
-    const [created] = await db
-      .insert(users)
-      .values({
-        id: authUser.id,
-        name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
-        email: authUser.email!,
-        role: "member",
-        avatar: authUser.user_metadata?.avatar_url || null,
-      })
-      .returning();
+    const { data: created } = await supabase.from("users").insert({
+      id: authUser.id,
+      name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+      email: authUser.email!,
+      role: "member",
+      avatar: authUser.user_metadata?.avatar_url || null,
+    }).select().single();
     user = created;
   }
+  if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
   const jwt = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
   return c.json({
@@ -114,8 +112,8 @@ authRoutes.get("/me", async (c) => {
 
   try {
     const payload = verifyToken(token);
-    const db = getDb();
-    const [user] = await db.select().from(users).where(eq(users.id, payload.userId));
+    const supabase = getSupabase();
+    const { data: user } = await supabase.from("users").select("*").eq("id", payload.userId).single();
     if (!user) {
       return c.json({ error: "User not found" }, 404);
     }

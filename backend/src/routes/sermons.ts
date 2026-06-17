@@ -1,27 +1,25 @@
 import { Hono } from "hono";
-import { and, eq, like, or } from "drizzle-orm";
-import { getDb } from "../db";
-import { sermons } from "../db/schema";
+import { getSupabase } from "../lib/supabase";
 
 export const sermonRoutes = new Hono();
 
 sermonRoutes.get("/", async (c) => {
-  const db = getDb();
+  const supabase = getSupabase();
   const category = c.req.query("category");
   const query = c.req.query("q");
 
-  let conditions = undefined;
+  let q = supabase.from("sermons").select("*");
   if (category && category !== "All") {
-    conditions = eq(sermons.category, category);
+    q = q.eq("category", category);
   }
   if (query) {
-    const q = `%${query}%`;
-    const search = or(like(sermons.title, q), like(sermons.speaker, q), like(sermons.ministry, q));
-    conditions = conditions ? and(conditions, search) : search;
+    const p = `%${query}%`;
+    q = q.or(`title.ilike.${p},speaker.ilike.${p},ministry.ilike.${p}`);
   }
 
-  const all = await db.select().from(sermons).where(conditions);
-  return c.json(all);
+  const { data, error } = await q;
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json(data);
 });
 
 sermonRoutes.get("/categories", async () => {

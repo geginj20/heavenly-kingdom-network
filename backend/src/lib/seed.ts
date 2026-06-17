@@ -1,12 +1,9 @@
-import { getDb } from "../db";
-import { prayers, sermons, events, users, donations } from "../db/schema";
 import { getSupabase } from "./supabase";
 
 async function seed() {
   console.log("Seeding database...");
 
   const supabase = getSupabase();
-  const db = getDb();
 
   const { data: adminAuth, error: adminErr } = await supabase.auth.admin.createUser({
     email: "admin@hkn.com",
@@ -38,24 +35,24 @@ async function seed() {
     return;
   }
 
-  await db.insert(users).values([
+  await supabase.from("users").insert([
     { id: adminId, name: "Admin User", email: "admin@hkn.com", role: "superadmin" },
     { id: sarahId, name: "Sarah Mitchell", email: "sarah@email.com", role: "pastor" },
     { id: davidId, name: "David Kim", email: "david@email.com", role: "member" },
   ]);
   console.log("Users seeded");
 
-  await db.insert(prayers).values([
-    { name: "Sarah M.", anonymous: false, category: "Healing", text: "Please pray for my mother who is undergoing surgery next week.", prayers: 24, comments: 3, status: "approved", userId: sarahId },
+  await supabase.from("prayers").insert([
+    { name: "Sarah M.", anonymous: false, category: "Healing", text: "Please pray for my mother who is undergoing surgery next week.", prayers: 24, comments: 3, status: "approved", user_id: sarahId },
     { name: "Pastor James", anonymous: false, category: "Ministry", text: "Our church is launching a new outreach program in the downtown area.", prayers: 47, comments: 8, status: "approved" },
     { name: "Anonymous", anonymous: true, category: "Guidance", text: "I need wisdom for a career decision that affects my family.", prayers: 18, comments: 2, status: "pending" },
-    { name: "David K.", anonymous: false, category: "Family", text: "Praying for reconciliation with my brother.", prayers: 31, comments: 5, status: "approved", userId: davidId },
+    { name: "David K.", anonymous: false, category: "Family", text: "Praying for reconciliation with my brother.", prayers: 31, comments: 5, status: "approved", user_id: davidId },
     { name: "Maria L.", anonymous: false, category: "Finances", text: "Lost my job last month. Trusting God to provide.", prayers: 42, comments: 12, status: "approved" },
     { name: "Anonymous", anonymous: true, category: "Salvation", text: "Please pray for my husband to come to know Jesus.", prayers: 56, comments: 9, status: "flagged" },
   ]);
   console.log("Prayers seeded");
 
-  await db.insert(sermons).values([
+  await supabase.from("sermons").insert([
     { title: "Walking by Faith, Not by Sight", speaker: "Pastor Michael Johnson", ministry: "Living Faith Church", duration: "42 min", category: "Faith", thumbnail: "/images/sermon-thumb-1.jpg", date: "June 14, 2026" },
     { title: "The Power of Covenant Relationships", speaker: "Dr. Sarah Williams", ministry: "Covenant Ministries", duration: "38 min", category: "Relationships", thumbnail: "/images/sermon-thumb-2.jpg", date: "June 12, 2026" },
     { title: "Worship that Moves Heaven", speaker: "Pastor David Chen", ministry: "Upper Room Worship", duration: "55 min", category: "Worship", thumbnail: "/images/sermon-thumb-3.jpg", date: "June 10, 2026" },
@@ -65,7 +62,7 @@ async function seed() {
   ]);
   console.log("Sermons seeded");
 
-  await db.insert(events).values([
+  await supabase.from("events").insert([
     { title: "Global Worship Night", date: "2026-06-20", day: "20", month: "JUN", time: "7:00 PM", timezone: "EST", location: "Online", isOnline: true, image: "/images/event-worship-night.jpg", description: "Join believers worldwide for an evening of powerful worship and prayer." },
     { title: "Kingdom Leadership Conference", date: "2026-06-25", day: "25", month: "JUN", time: "9:00 AM", timezone: "PST", location: "Los Angeles, CA", isOnline: false, image: "/images/event-conference.jpg", description: "A three-day conference for pastors and ministry leaders." },
     { title: "Youth Revival Night", date: "2026-06-28", day: "28", month: "JUN", time: "6:00 PM", timezone: "CST", location: "Dallas, TX", isOnline: true, image: "/images/event-worship-night.jpg", description: "Igniting the fire of the Holy Spirit in the next generation." },
@@ -73,7 +70,7 @@ async function seed() {
   ]);
   console.log("Events seeded");
 
-  await db.insert(donations).values([
+  await supabase.from("donations").insert([
     { name: "Anonymous", amount: 100, recurring: true },
     { name: "Sarah M.", amount: 50, recurring: false },
     { name: "James K.", amount: 250, recurring: true },

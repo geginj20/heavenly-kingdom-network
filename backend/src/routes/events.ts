@@ -1,17 +1,16 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { desc } from "drizzle-orm";
-import { getDb } from "../db";
-import { events, eventRsvps } from "../db/schema";
+import { getSupabase } from "../lib/supabase";
 import { requireAdmin } from "../lib/jwt";
 
 export const eventRoutes = new Hono();
 
 eventRoutes.get("/", async (c) => {
-  const db = getDb();
-  const all = await db.select().from(events).orderBy(desc(events.date));
-  return c.json(all);
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from("events").select("*").order("date", { ascending: false });
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json(data);
 });
 
 const createEventSchema = z.object({
@@ -28,21 +27,27 @@ const createEventSchema = z.object({
 });
 
 eventRoutes.post("/", requireAdmin, zValidator("json", createEventSchema), async (c) => {
-  const db = getDb();
+  const supabase = getSupabase();
   const data = c.req.valid("json");
   const d = new Date(data.date);
-  const [event] = await db.insert(events).values({
+  const { data: event, error } = await supabase.from("events").insert({
     ...data,
     month: data.month || d.toLocaleString("en-US", { month: "short" }).toUpperCase(),
     day: data.day || String(d.getDate()).padStart(2, "0"),
-  }).returning();
+  }).select().single();
+  if (error) return c.json({ error: error.message }, 500);
   return c.json(event, 201);
 });
 
 eventRoutes.post("/:id/rsvp", async (c) => {
-  const db = getDb();
+  const supabase = getSupabase();
   const eventId = Number(c.req.param("id"));
   const body = await c.req.json();
-  const [rsvp] = await db.insert(eventRsvps).values({ eventId, name: body.name, email: body.email }).returning();
+  const { data: rsvp, error } = await supabase.from("event_rsvps").insert({
+    event_id: eventId,
+    name: body.name,
+    email: body.email,
+  }).select().single();
+  if (error) return c.json({ error: error.message }, 500);
   return c.json(rsvp, 201);
 });
