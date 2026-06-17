@@ -55,7 +55,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Deploy to Cloudflare Pages (includes Pages Functions)
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: pages deploy dist --project-name=hkn-website
