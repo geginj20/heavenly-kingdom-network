@@ -8,6 +8,9 @@ import { sermonRoutes } from "../../backend/src/routes/sermons";
 import { eventRoutes } from "../../backend/src/routes/events";
 import { bibleRoutes } from "../../backend/src/routes/bible";
 import { adminRoutes } from "../../backend/src/routes/admin";
+import { streamRoutes } from "../../backend/src/routes/streams";
+import { donationRoutes } from "../../backend/src/routes/donations";
+import { paymentRoutes } from "../../backend/src/routes/payments";
 
 const app = new Hono();
 
@@ -30,5 +33,8 @@ app.route("/api/sermons", sermonRoutes);
 app.route("/api/events", eventRoutes);
 app.route("/api/bible", bibleRoutes);
 app.route("/api/admin", adminRoutes);
+app.route("/api/streams", streamRoutes);
+app.route("/api/donations", donationRoutes);
+app.route("/api/payments", paymentRoutes);
 
 export const onRequest = handle(app);
