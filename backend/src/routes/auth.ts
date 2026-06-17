@@ -35,7 +35,7 @@ authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
     return c.json({ error: "User not found" }, 404);
   }
 
-  const token = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  const token = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
   return c.json({
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
@@ -62,7 +62,7 @@ authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
 
   if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
-  const token = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  const token = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
   return c.json({
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -95,7 +95,7 @@ authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
   }
   if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
-  const jwt = signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  const jwt = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
   return c.json({
     token: jwt,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
@@ -111,7 +111,7 @@ authRoutes.get("/me", async (c) => {
   }
 
   try {
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     const supabase = getSupabase();
     const { data: user } = await supabase.from("users").select("*").eq("id", payload.userId).single();
     if (!user) {
