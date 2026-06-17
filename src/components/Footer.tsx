@@ -18,6 +18,7 @@ const footerLinks = {
       { label: "Prayer Wall", href: "/prayer-wall" },
       { label: "Sermon Library", href: "/sermons" },
       { label: "Events Calendar", href: "/events" },
+      { label: "Giving History", href: "/donations" },
     ],
   },
   resources: {

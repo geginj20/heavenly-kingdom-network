@@ -7,6 +7,9 @@ import { sermonRoutes } from "./routes/sermons";
 import { eventRoutes } from "./routes/events";
 import { bibleRoutes } from "./routes/bible";
 import { adminRoutes } from "./routes/admin";
+import { streamRoutes } from "./routes/streams";
+import { donationRoutes } from "./routes/donations";
+import { paymentRoutes } from "./routes/payments";
 
 const app = new Hono();
 
@@ -21,5 +24,8 @@ app.route("/api/sermons", sermonRoutes);
 app.route("/api/events", eventRoutes);
 app.route("/api/bible", bibleRoutes);
 app.route("/api/admin", adminRoutes);
+app.route("/api/streams", streamRoutes);
+app.route("/api/donations", donationRoutes);
+app.route("/api/payments", paymentRoutes);
 
 export default app;

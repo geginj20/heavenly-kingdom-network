@@ -3,25 +3,26 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { signToken, verifyToken } from "../lib/jwt";
+import { rateLimit, strictRateLimit } from "../lib/rateLimiter";
 
 export const authRoutes = new Hono();
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email().max(100),
+  password: z.string().min(1).max(100),
 });
 
 const registerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
+  name: z.string().min(2).max(50),
+  email: z.string().email().max(100),
+  password: z.string().min(6).max(100),
 });
 
 const googleSchema = z.object({
-  token: z.string().min(1),
+  token: z.string().min(1).max(5000),
 });
 
-authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
+authRoutes.post("/login", rateLimit, zValidator("json", loginSchema), async (c) => {
   const { email, password } = c.req.valid("json");
 
   const supabase = getSupabase();
@@ -42,7 +43,7 @@ authRoutes.post("/login", zValidator("json", loginSchema), async (c) => {
   });
 });
 
-authRoutes.post("/register", zValidator("json", registerSchema), async (c) => {
+authRoutes.post("/register", strictRateLimit, zValidator("json", registerSchema), async (c) => {
   const { name, email, password } = c.req.valid("json");
 
   const supabase = getSupabase();
@@ -100,6 +101,27 @@ authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
     token: jwt,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
   });
+});
+
+authRoutes.post("/forgot-password", zValidator("json", z.object({ email: z.string().email() })), async (c) => {
+  const { email } = c.req.valid("json");
+  const supabase = getSupabase();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${c.req.header("origin") || "http://localhost:5173"}/reset-password`,
+  });
+  if (error) return c.json({ error: error.message }, 400);
+  return c.json({ ok: true, message: "If that email is registered, a reset link has been sent." });
+});
+
+authRoutes.post("/reset-password", zValidator("json", z.object({
+  password: z.string().min(6),
+  token: z.string().min(1),
+})), async (c) => {
+  const { password, token } = c.req.valid("json");
+  const supabase = getSupabase();
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) return c.json({ error: error.message }, 400);
+  return c.json({ ok: true, message: "Password updated successfully." });
 });
 
 authRoutes.get("/me", async (c) => {

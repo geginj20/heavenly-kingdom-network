@@ -69,6 +69,12 @@ export const api = {
   },
 
   auth: {
+    forgotPassword: async (email: string) => {
+      return request("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+    },
+    resetPassword: async (password: string, token: string) => {
+      return request("/auth/reset-password", { method: "POST", body: JSON.stringify({ password, token }) });
+    },
     login: async (email: string, password: string) => {
       return request<{ token: string; user: AuthUser }>("/auth/login", {
         method: "POST",
@@ -165,6 +171,23 @@ export const api = {
         return sermonCategories;
       }
     },
+    create: async (data: Partial<Sermon>): Promise<Sermon> => {
+      return request<Sermon>("/sermons", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    update: async (id: string, data: Partial<Sermon>): Promise<Sermon> => {
+      return request<Sermon>(`/sermons/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    delete: async (id: string): Promise<void> => {
+      await request(`/sermons/${id}`, { method: "DELETE", headers: authHeaders() });
+    },
   },
 
   events: {
@@ -174,6 +197,27 @@ export const api = {
       } catch {
         return demoEvents;
       }
+    },
+    create: async (eventData: {
+      title: string; date: string; time: string; location: string;
+      description: string; isOnline?: boolean; month?: string;
+      day?: string; timezone?: string; image?: string;
+    }) => {
+      return request("/events", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(eventData),
+      });
+    },
+    update: async (id: string, data: Partial<Event>): Promise<Event> => {
+      return request<Event>(`/events/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    delete: async (id: string) => {
+      return request(`/events/${id}`, { method: "DELETE", headers: authHeaders() });
     },
     rsvp: async (eventId: number, name: string, email: string) => {
       return request(`/events/${eventId}/rsvp`, {
@@ -222,20 +266,92 @@ export const api = {
     },
   },
 
+  streams: {
+    upcoming: async (): Promise<{ id: string; title: string; host: string; time: string }[]> => {
+      try {
+        return await request("/streams/upcoming");
+      } catch {
+        return [
+          { id: "1", title: "Morning Devotional", host: "Pastor Sarah Williams", time: "Tomorrow, 7:00 AM EST" },
+          { id: "2", title: "Bible Study: Book of Romans", host: "Dr. Michael Johnson", time: "Wed, 6:30 PM EST" },
+          { id: "3", title: "Youth Night Live", host: "Youth Ministry Team", time: "Fri, 7:00 PM PST" },
+        ];
+      }
+    },
+  },
+
+  donations: {
+    create: async (data: { amount: number; recurring?: boolean; donor_name?: string; donor_email?: string }) => {
+      return request("/donations", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    history: async (email: string): Promise<{ amount: number; donor_name: string; donor_email: string; recurring: boolean; created_at: string }[]> => {
+      try {
+        return await request(`/donations/history?email=${encodeURIComponent(email)}`);
+      } catch {
+        return [];
+      }
+    },
+  },
+
+  payments: {
+    initialize: async (data: { email: string; amount: number; currency?: string; metadata?: Record<string, unknown> }) => {
+      return request("/payments/initialize", { method: "POST", body: JSON.stringify(data) });
+    },
+    verify: async (reference: string) => {
+      return request(`/payments/verify/${reference}`);
+    },
+    paypalCreate: async (data: { amount: number; currency?: string }) => {
+      return request("/payments/paypal/create", { method: "POST", body: JSON.stringify(data) });
+    },
+    paypalCapture: async (data: { orderId: string }) => {
+      return request("/payments/paypal/capture", { method: "POST", body: JSON.stringify(data) });
+    },
+  },
+
   admin: {
-    stats: async () => {
+    stats: async (): Promise<{ totalUsers: number; totalPrayers: number; pendingPrayers: number; totalSermons: number; monthlyGiving: number; activeEvents: number }> => {
       try {
         return await request("/admin/stats", { headers: authHeaders() });
       } catch {
         return adminStats;
       }
     },
-    prayers: async (status?: string) => {
+    users: async (): Promise<{ id: number; name: string; email: string; role: string; status: string }[]> => {
+      try {
+        return await request("/admin/users", { headers: authHeaders() });
+      } catch {
+        return [
+          { id: 1, name: "Sarah Mitchell", email: "sarah@email.com", role: "Pastor", status: "active" },
+          { id: 2, name: "James Cooper", email: "james@email.com", role: "Ministry Leader", status: "active" },
+          { id: 3, name: "David Kim", email: "david@email.com", role: "Member", status: "active" },
+          { id: 4, name: "Maria Lopez", email: "maria@email.com", role: "Member", status: "inactive" },
+          { id: 5, name: "Pastor Robert", email: "robert@church.org", role: "Admin", status: "active" },
+          { id: 6, name: "Amanda Foster", email: "amanda@email.com", role: "Ministry Leader", status: "active" },
+        ];
+      }
+    },
+    donations: async (): Promise<{ name: string; amount: number; date: string; recurring: boolean }[]> => {
+      try {
+        return await request("/admin/donations", { headers: authHeaders() });
+      } catch {
+        return [
+          { name: "Anonymous", amount: 100, date: "Jun 15, 2026", recurring: true },
+          { name: "Sarah M.", amount: 50, date: "Jun 14, 2026", recurring: false },
+          { name: "James K.", amount: 250, date: "Jun 13, 2026", recurring: true },
+          { name: "Living Faith Church", amount: 500, date: "Jun 12, 2026", recurring: false },
+          { name: "Maria L.", amount: 25, date: "Jun 11, 2026", recurring: true },
+        ];
+      }
+    },
+    prayers: async (status?: string): Promise<Record<string, unknown>[]> => {
       try {
         const params = status && status !== "all" ? `?status=${status}` : "";
         return await request(`/admin/prayers${params}`, { headers: authHeaders() });
       } catch {
-        return adminPrayers;
+        return adminPrayers as unknown as Record<string, unknown>[];
       }
     },
     updatePrayerStatus: async (id: number, status: string) => {

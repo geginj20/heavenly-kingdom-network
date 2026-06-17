@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Video, ChevronRight, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Video, ChevronRight } from "lucide-react";
 import ScrollReveal from "../../components/ScrollReveal";
 import { api } from "../../lib/api";
 import type { Event } from "../../data/demoData";
@@ -31,8 +31,17 @@ export default function EventsPreviewSection() {
         </ScrollReveal>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-[#d4af37] animate-spin" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden border border-[#0c1b33]/5">
+                <div className="h-48 bg-[#e6eef7] animate-pulse" />
+                <div className="p-5 space-y-3">
+                  <div className="h-4 w-16 bg-[#e6eef7] rounded animate-pulse" />
+                  <div className="h-5 w-3/4 bg-[#e6eef7] rounded animate-pulse" />
+                  <div className="h-3 w-1/2 bg-[#e6eef7] rounded animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-12">

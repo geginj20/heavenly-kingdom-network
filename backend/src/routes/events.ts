@@ -14,16 +14,34 @@ eventRoutes.get("/", async (c) => {
 });
 
 const createEventSchema = z.object({
-  title: z.string().min(1),
-  date: z.string().min(1),
-  time: z.string().min(1),
-  location: z.string().min(1),
-  description: z.string().min(1),
+  title: z.string().min(1).max(200),
+  date: z.string().min(1).max(20),
+  time: z.string().min(1).max(20),
+  location: z.string().min(1).max(200),
+  description: z.string().min(1).max(2000),
   isOnline: z.boolean().optional().default(false),
-  month: z.string().optional(),
-  day: z.string().optional(),
-  timezone: z.string().optional().default("EST"),
-  image: z.string().optional().default("/images/event-worship-night.jpg"),
+  month: z.string().max(10).optional(),
+  day: z.string().max(5).optional(),
+  timezone: z.string().max(10).optional().default("EST"),
+  image: z.string().max(500).optional().default("/images/event-worship-night.jpg"),
+});
+
+const updateEventSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  date: z.string().min(1).max(20).optional(),
+  time: z.string().min(1).max(20).optional(),
+  location: z.string().min(1).max(200).optional(),
+  description: z.string().min(1).max(2000).optional(),
+  isOnline: z.boolean().optional(),
+  month: z.string().max(10).optional(),
+  day: z.string().max(5).optional(),
+  timezone: z.string().max(10).optional(),
+  image: z.string().max(500).optional(),
+});
+
+const rsvpSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
 });
 
 eventRoutes.post("/", requireAdmin, zValidator("json", createEventSchema), async (c) => {
@@ -39,14 +57,31 @@ eventRoutes.post("/", requireAdmin, zValidator("json", createEventSchema), async
   return c.json(event, 201);
 });
 
-eventRoutes.post("/:id/rsvp", async (c) => {
+eventRoutes.patch("/:id", requireAdmin, zValidator("json", updateEventSchema), async (c) => {
+  const supabase = getSupabase();
+  const id = Number(c.req.param("id"));
+  const body = c.req.valid("json");
+  const { data: event, error } = await supabase.from("events").update(body).eq("id", id).select().single();
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json(event);
+});
+
+eventRoutes.delete("/:id", requireAdmin, async (c) => {
+  const supabase = getSupabase();
+  const id = Number(c.req.param("id"));
+  const { error } = await supabase.from("events").delete().eq("id", id);
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true });
+});
+
+eventRoutes.post("/:id/rsvp", zValidator("json", rsvpSchema), async (c) => {
   const supabase = getSupabase();
   const eventId = Number(c.req.param("id"));
-  const body = await c.req.json();
+  const { name, email } = c.req.valid("json");
   const { data: rsvp, error } = await supabase.from("event_rsvps").insert({
     event_id: eventId,
-    name: body.name,
-    email: body.email,
+    name,
+    email,
   }).select().single();
   if (error) return c.json({ error: error.message }, 500);
   return c.json(rsvp, 201);

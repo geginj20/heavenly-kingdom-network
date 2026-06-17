@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 
 export const bibleRoutes = new Hono();
@@ -239,9 +241,16 @@ bibleRoutes.get("/search", async (c) => {
   return c.json({ results, query, translation });
 });
 
-bibleRoutes.post("/notes", async (c) => {
+const noteSchema = z.object({
+  userId: z.string().optional(),
+  book: z.string().min(1).max(100),
+  verse: z.string().min(1).max(20),
+  text: z.string().min(1).max(2000),
+});
+
+bibleRoutes.post("/notes", zValidator("json", noteSchema), async (c) => {
   const supabase = getSupabase();
-  const body = await c.req.json();
+  const body = c.req.valid("json");
   const { data: note, error } = await supabase.from("bible_notes").insert({
     user_id: body.userId,
     book: body.book,

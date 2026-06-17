@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "../components/SEO";
 import {
   Search,
   ChevronLeft,
@@ -187,6 +188,7 @@ export default function BibleReader() {
 
   return (
     <div className="pt-[72px] min-h-screen bg-[#e6eef7]">
+      <SEO title={selectedBook ? `${selectedBook} ${selectedChapter} — Bible` : "Bible"} description="Read the Bible online with multiple translations (KJV, WEB, ASV). Search, bookmark, and take study notes." />
       <div className="bg-[#0c1b33] py-6 px-4">
         <div className="container-main mx-auto flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Radio, User } from "lucide-react";
+import { Menu, X, Radio, User, Book, Heart, Headphones, Calendar, Gift, DollarSign } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { label: "Scriptures", path: "/bible" },
-  { label: "Prayer Wall", path: "/prayer-wall" },
-  { label: "Sermons", path: "/sermons" },
-  { label: "Events", path: "/events" },
-  { label: "Give", path: "/#give" },
+  { label: "Scriptures", path: "/bible", icon: Book },
+  { label: "Prayer Wall", path: "/prayer-wall", icon: Heart },
+  { label: "Sermons", path: "/sermons", icon: Headphones },
+  { label: "Events", path: "/events", icon: Calendar },
+  { label: "Give", path: "/#give", icon: Gift },
 ];
 
 export default function Navigation() {
@@ -119,60 +119,117 @@ export default function Navigation() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "tween", duration: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[999] lg:hidden"
           >
             <div
-              className="absolute inset-0 bg-black/50"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
               className="absolute right-0 top-0 bottom-0 w-[280px] bg-[#0c1b33] shadow-2xl"
             >
-              <div className="p-6 pt-20">
-                {navLinks.map((link) => (
+              <div className="flex items-center justify-between px-6 pt-6 pb-2">
+                <span className="text-xs text-white/40 uppercase tracking-wider font-medium">Menu</span>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/80" />
+                </button>
+              </div>
+              <nav className="p-4 pt-2">
+                {navLinks.map((link, i) => {
+                  const Icon = link.icon;
+                  return (
+                    <motion.div
+                      key={link.label}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 * i }}
+                    >
+                      <Link
+                        to={link.path}
+                        onClick={(e) => {
+                          setMobileOpen(false);
+                          if (link.path === "/#give") {
+                            e.preventDefault();
+                            if (location.pathname !== "/") {
+                              window.location.hash = "#/";
+                            }
+                            setTimeout(() => {
+                              document.getElementById("give")?.scrollIntoView({ behavior: "smooth" });
+                            }, 500);
+                          }
+                        }}
+                        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${
+                          isActive(link.path)
+                            ? "bg-[#d4af37]/10 text-[#d4af37]"
+                            : "text-white/70 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        {link.label}
+                        {link.label === "Events" && (
+                          <span className="ml-auto flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/20 text-red-400 text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            Live
+                          </span>
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </nav>
+              <div className="p-4 pt-2 border-t border-white/10">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
                   <Link
-                    key={link.label}
-                    to={link.path}
-                    onClick={(e) => {
-                      if (link.path === "/#give") {
-                        e.preventDefault();
-                        setMobileOpen(false);
-                        if (location.pathname !== "/") {
-                          window.location.hash = "#/";
-                        }
-                        setTimeout(() => {
-                          document.getElementById("give")?.scrollIntoView({ behavior: "smooth" });
-                        }, 500);
-                      }
-                    }}
-                    className={`block py-3 text-lg font-medium ${
-                      isActive(link.path) ? "text-[#d4af37]" : "text-white/80"
-                    }`}
+                    to="/donations"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white transition-all"
                   >
-                    {link.label}
+                    <DollarSign className="w-5 h-5" />
+                    Giving History
                   </Link>
-                ))}
-                <div className="mt-6 pt-6 border-t border-white/10">
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.27 }}
+                >
                   <Link
                     to="/admin"
-                    className="flex items-center gap-2 py-3 text-white/80"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white transition-all"
                   >
                     <User className="w-5 h-5" />
                     Admin Dashboard
                   </Link>
-                  <div className="flex items-center gap-2 py-3 text-red-400">
-                    <Radio className="w-5 h-5" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-400"
+                >
+                  <Radio className="w-5 h-5" />
+                  <span className="flex items-center gap-2">
                     Live Stream
-                  </div>
-                </div>
+                    <span className="flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                    </span>
+                  </span>
+                </motion.div>
               </div>
             </motion.div>
           </motion.div>
