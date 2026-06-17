@@ -1,6 +1,6 @@
 # Heavenly Kingdom Network (HKN)
 
-A global, open-source Christian platform connecting believers worldwide through prayer, scripture, and fellowship — built on a $0/month infrastructure that serves the Kingdom.
+A global, open-source Christian platform connecting believers worldwide through prayer, scripture, and fellowship.
 
 ## Features
 

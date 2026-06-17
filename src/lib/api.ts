@@ -9,7 +9,6 @@ import {
   demoPrayers,
   demoSermons,
   demoEvents,
-  bibleBooks as demoBibleBooks,
   sampleVerses,
   dailyScriptures,
   adminStats,
@@ -185,31 +184,33 @@ export const api = {
   },
 
   bible: {
-    books: async (): Promise<BibleBook[]> => {
+    books: async () => {
+      const data = await request<{ books: BibleBook[]; translations: string[]; translationNames: Record<string, string> }>("/bible/books");
+      return data;
+    },
+    verses: async (book: string, chapter: number, translation = "kjv") => {
       try {
-        return await request<BibleBook[]>("/bible/books");
+        return await request<{ verses: BibleVerse[]; book: string; chapter: number; translation: string; translationName: string }>(
+          `/bible/verses/${encodeURIComponent(book)}/${chapter}?translation=${translation}`
+        );
       } catch {
-        return demoBibleBooks;
+        return { verses: sampleVerses[book] || [], book, chapter, translation, translationName: translation.toUpperCase() };
       }
     },
-    verses: async (book: string, chapter: number): Promise<BibleVerse[]> => {
-      try {
-        return await request<BibleVerse[]>(`/bible/verses/${encodeURIComponent(book)}/${chapter}`);
-      } catch {
-        return sampleVerses[book] || [];
-      }
-    },
-    search: async (query: string): Promise<{ book: string; verse: number; text: string }[]> => {
+    search: async (query: string, translation = "kjv") => {
       if (!API_BASE) {
         const q = query.toLowerCase();
-        return Object.entries(sampleVerses).flatMap(([book, verses]) =>
+        const results = Object.entries(sampleVerses).flatMap(([book, verses]) =>
           verses.filter((v) => v.text.toLowerCase().includes(q)).map((v) => ({ book, ...v }))
         );
+        return { results, query, translation };
       }
       try {
-        return await request(`/bible/search?q=${encodeURIComponent(query)}`);
+        return await request<{ results: { book: string; chapter: number; verse: number; text: string }[]; query: string; translation: string }>(
+          `/bible/search?q=${encodeURIComponent(query)}&translation=${translation}`
+        );
       } catch {
-        return [];
+        return { results: [], query, translation };
       }
     },
   },
