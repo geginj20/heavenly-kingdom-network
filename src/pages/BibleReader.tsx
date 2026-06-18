@@ -84,7 +84,7 @@ export default function BibleReader() {
         const data = await api.bible.books();
         setBooksData(data);
       } catch {
-        setBooksData({ books: [], translations: ["kjv"], translationNames: { kjv: "King James Version" } });
+        setBooksData({ books: [], translations: ["kjv", "web", "asv", "bbe", "darby", "ylt", "bsb", "gnv", "lsv", "fbv", "rv", "wmb", "niv", "nlt", "esv", "dra", "t4t"], translationNames: { kjv: "King James Version", web: "World English Bible", asv: "American Standard Version", bbe: "Bible in Basic English", darby: "Darby Translation", ylt: "Young's Literal Translation", bsb: "Berean Standard Bible", gnv: "Geneva Bible 1599", lsv: "Literal Standard Version", fbv: "Free Bible Version", rv: "Revised Version", wmb: "World Messianic Bible", niv: "New International Version", nlt: "New Living Translation", esv: "English Standard Version", dra: "Douay-Rheims 1899", t4t: "Translation for Translators" } });
       }
       setLoadingBooks(false);
       const initialBook = "Psalms";
