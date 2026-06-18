@@ -4,16 +4,17 @@ const requestCounts = new Map<string, { count: number; resetAt: number }>();
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 20;
+const MAX_STRICT = 5;
 
-const CLEANUP_INTERVAL = 120_000;
-setInterval(() => {
+function cleanup() {
   const now = Date.now();
   for (const [key, val] of requestCounts) {
     if (val.resetAt < now) requestCounts.delete(key);
   }
-}, CLEANUP_INTERVAL);
+}
 
 export const rateLimit = createMiddleware(async (c, next) => {
+  cleanup();
   const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "unknown";
   const key = `${ip}:${c.req.path}`;
   const now = Date.now();
@@ -36,6 +37,7 @@ export const rateLimit = createMiddleware(async (c, next) => {
 });
 
 export const strictRateLimit = createMiddleware(async (c, next) => {
+  cleanup();
   const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "unknown";
   const key = `strict:${ip}`;
   const now = Date.now();
@@ -47,7 +49,7 @@ export const strictRateLimit = createMiddleware(async (c, next) => {
   }
 
   entry.count++;
-  if (entry.count > 5) {
+  if (entry.count > MAX_STRICT) {
     return c.json({ error: "Too many requests. Please try again later." }, 429);
   }
 
