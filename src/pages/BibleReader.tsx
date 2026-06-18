@@ -69,21 +69,30 @@ export default function BibleReader() {
   const fetchVerses = useCallback(async (book: string, chapter: number, translation: string) => {
     setLoadingVerses(true);
     setSelectedVerse(null);
-    const data = await api.bible.verses(book, chapter, translation);
-    setVersesData(data);
+    try {
+      const data = await api.bible.verses(book, chapter, translation);
+      setVersesData(data);
+    } catch {
+      setVersesData({ verses: [], book, chapter, translation, translationName: translation.toUpperCase() });
+    }
     setLoadingVerses(false);
   }, []);
 
   useEffect(() => {
-    api.bible.books().then((data) => {
-      setBooksData(data);
+    (async () => {
+      try {
+        const data = await api.bible.books();
+        setBooksData(data);
+      } catch {
+        setBooksData({ books: [], translations: ["kjv"], translationNames: { kjv: "King James Version" } });
+      }
       setLoadingBooks(false);
       const initialBook = "Psalms";
       const initialChapter = 1;
       setSelectedBook(initialBook);
       setSelectedChapter(initialChapter);
       fetchVerses(initialBook, initialChapter, "kjv");
-    });
+    })();
   }, [fetchVerses]);
 
   const loadVerses = (book: string, chapter: number) => {
@@ -581,12 +590,13 @@ export default function BibleReader() {
                   <div className="space-y-1">
                     {["Psalm 23", "John 3", "Romans 8", "Philippians 4", "Genesis 1", "Proverbs 3"].map((ref) => {
                       const parts = ref.split(" ");
-                      const num = parts.pop() || "";
+                      const num = Number(parts.pop()) || 1;
                       const book = parts.join(" ");
+                      const bookName = book === "Psalm" ? "Psalms" : book;
                       return (
                         <button
                           key={ref}
-                          onClick={() => handleBookSelect(book)}
+                          onClick={() => loadVerses(bookName, num)}
                           className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[#f8f6f3] text-sm text-[#6b7c93] hover:text-[#0c1b33] transition-colors"
                         >
                           {book} {num}
