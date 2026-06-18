@@ -22,18 +22,6 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
-        <ScrollReveal delay={100}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-8 border border-white/10">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d4af37]" />
-            </span>
-            <span className="text-sm text-white/80 font-medium">
-              Open Source & Forever Free
-            </span>
-          </div>
-        </ScrollReveal>
-
         <ScrollReveal delay={200}>
           <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold text-white leading-tight mb-6 tracking-tight living-water-text">
             Connecting Believers Worldwide
