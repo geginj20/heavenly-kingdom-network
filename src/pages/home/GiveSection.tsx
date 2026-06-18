@@ -161,6 +161,28 @@ export default function GiveSection() {
     await handlePaystack();
   };
 
+  if (!paystackKey) {
+    return (
+      <section id="give" className="bg-white section-padding">
+        <div className="container-main mx-auto text-center max-w-lg">
+          <ScrollReveal>
+            <div className="w-20 h-20 rounded-full bg-[#f8f6f3] flex items-center justify-center mx-auto mb-6">
+              <Heart className="w-10 h-10 text-[#d4af37]" />
+            </div>
+            <h2 className="font-display text-3xl font-bold text-[#0c1b33] mb-3">Support the Mission</h2>
+            <p className="text-[#6b7c93] mb-4">Online giving is coming soon. Until then, you can support us through:</p>
+            <div className="bg-[#f8f6f3] rounded-xl p-6 text-left space-y-3 mb-8">
+              <p><strong className="text-[#0c1b33]">Bank Transfer</strong><br /><span className="text-sm text-[#6b7c93]">Contact us for bank details</span></p>
+              <p><strong className="text-[#0c1b33]">M-Pesa Paybill</strong><br /><span className="text-sm text-[#6b7c93]">Business Number: TBD · Account: HKN</span></p>
+              <p><strong className="text-[#0c1b33]">Email</strong><br /><span className="text-sm text-[#6b7c93]">giving@heavenlykingdom.network</span></p>
+            </div>
+            <p className="text-sm text-[#6b7c93]">We'll notify you when online payments are live!</p>
+          </ScrollReveal>
+        </div>
+      </section>
+    );
+  }
+
   if (showSuccess) {
     return (
       <section id="give" className="bg-white section-padding">

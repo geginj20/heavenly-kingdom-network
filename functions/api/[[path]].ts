@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { handle } from "hono/cloudflare-pages";
+import { setEnv } from "../../backend/src/lib/env";
 import { authRoutes } from "../../backend/src/routes/auth";
 import { prayerRoutes } from "../../backend/src/routes/prayers";
 import { sermonRoutes } from "../../backend/src/routes/sermons";
@@ -15,10 +16,7 @@ import { paymentRoutes } from "../../backend/src/routes/payments";
 const app = new Hono();
 
 app.use("*", async (c, next) => {
-  if (c.env?.DATABASE_URL) process.env.DATABASE_URL = c.env.DATABASE_URL;
-  if (c.env?.SUPABASE_URL) process.env.SUPABASE_URL = c.env.SUPABASE_URL;
-  if (c.env?.SUPABASE_SERVICE_KEY) process.env.SUPABASE_SERVICE_KEY = c.env.SUPABASE_SERVICE_KEY;
-  if (c.env?.JWT_SECRET) process.env.JWT_SECRET = c.env.JWT_SECRET;
+  setEnv(c.env as Record<string, string>);
   await next();
 });
 

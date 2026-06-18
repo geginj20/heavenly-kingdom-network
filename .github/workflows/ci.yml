@@ -6,13 +6,14 @@ on:
   pull_request:
     branches: [master]
 
-jobs:
-  frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  validate-frontend:
+    name: Validate Frontend
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,18 +21,22 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-
       - run: npm ci
       - run: npm run lint
       - run: npm run test
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
 
-  backend:
+  validate-backend:
+    name: Validate Backend
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./backend
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,23 +44,27 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
-
       - run: npm ci
       - run: npx tsc --noEmit
 
   deploy:
-    if: github.ref == 'refs/heads/master'
-    needs: [frontend, backend]
+    name: Deploy to Cloudflare Pages
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: [validate-frontend, validate-backend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
       - run: npm ci
-      - run: npm run build
-      - name: Deploy to Cloudflare Pages (includes Pages Functions)
+      - name: Deploy
         uses: cloudflare/wrangler-action@v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: pages deploy dist --project-name=hkn-website
+          command: pages deploy dist --project-name=hkn-website --branch production

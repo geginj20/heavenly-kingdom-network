@@ -1,8 +1,11 @@
 import { sign, verify } from "hono/jwt";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
+import { getEnv } from "./env";
 
-const JWT_SECRET = process.env.JWT_SECRET || "hkn-dev-secret-change-in-production";
+function getJwtSecret(): string {
+  return getEnv("JWT_SECRET") || process.env.JWT_SECRET || "hkn-dev-secret-change-in-production";
+}
 
 export interface JwtPayload {
   userId: string;
@@ -12,11 +15,11 @@ export interface JwtPayload {
 }
 
 export async function signToken(payload: JwtPayload): Promise<string> {
-  return sign({ ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 }, JWT_SECRET, "HS256");
+  return sign({ ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 }, getJwtSecret(), "HS256");
 }
 
 export async function verifyToken(token: string): Promise<JwtPayload> {
-  return verify(token, JWT_SECRET, "HS256") as unknown as Promise<JwtPayload>;
+  return verify(token, getJwtSecret(), "HS256") as unknown as Promise<JwtPayload>;
 }
 
 export async function requireAdmin(c: Context, next: () => Promise<void>) {
