@@ -1,4 +1,4 @@
-# HKN Backend
+# Kingdom Mission Network — Backend
 
 ## Setup
 

@@ -30,7 +30,7 @@ declare global {
 const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "";
 
 function generateRef() {
-  return `HKN-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `KMN-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export default function GiveSection() {
@@ -173,7 +173,7 @@ export default function GiveSection() {
             <p className="text-[#6b7c93] mb-4">Online giving is coming soon. Until then, you can support us through:</p>
             <div className="bg-[#f8f6f3] rounded-xl p-6 text-left space-y-3 mb-8">
               <p><strong className="text-[#0c1b33]">Bank Transfer</strong><br /><span className="text-sm text-[#6b7c93]">Contact us for bank details</span></p>
-              <p><strong className="text-[#0c1b33]">M-Pesa Paybill</strong><br /><span className="text-sm text-[#6b7c93]">Business Number: TBD · Account: HKN</span></p>
+              <p><strong className="text-[#0c1b33]">M-Pesa Paybill</strong><br /><span className="text-sm text-[#6b7c93]">Business Number: TBD · Account: KMN</span></p>
               <p><strong className="text-[#0c1b33]">Email</strong><br /><span className="text-sm text-[#6b7c93]">giving@heavenlykingdom.network</span></p>
             </div>
             <p className="text-sm text-[#6b7c93]">We'll notify you when online payments are live!</p>
