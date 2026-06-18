@@ -6,6 +6,8 @@ import { getSupabase } from "../lib/supabase";
 export const bibleRoutes = new Hono();
 
 const BIBLE_API = "https://bible-api.com";
+const CDN = "https://cdn.jsdelivr.net/gh/wldeh/bible-api@latest";
+const RKEPLIN = "https://bible-go-api.rkeplin.com/v1";
 
 const BOOKS = [
   { name: "Genesis", chapters: 50, testament: "old" },
@@ -76,36 +78,131 @@ const BOOKS = [
   { name: "Revelation", chapters: 22, testament: "new" },
 ];
 
-const TRANSLATIONS = ["kjv", "web", "asv"] as const;
-const TRANSLATION_NAMES: Record<string, string> = {
-  kjv: "King James Version",
-  web: "World English Bible",
-  asv: "American Standard Version",
-};
+type TranslationSource = "bible-api" | "wldeh" | "rkeplin";
 
-bibleRoutes.get("/books", (c) => c.json({ books: BOOKS, translations: TRANSLATIONS, translationNames: TRANSLATION_NAMES }));
+interface TranslationInfo {
+  id: string;
+  name: string;
+  source: TranslationSource;
+  wldehVersion?: string;
+  bookFormat: "name" | "abbr" | "number";
+  language: string;
+}
+
+const TRANSLATIONS: TranslationInfo[] = [
+  { id: "kjv", name: "King James Version", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "web", name: "World English Bible", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "asv", name: "American Standard Version", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "bbe", name: "Bible in Basic English", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "darby", name: "Darby Translation", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "ylt", name: "Young's Literal Translation", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "bsb", name: "Berean Standard Bible", source: "wldeh", wldehVersion: "en-bsb", bookFormat: "name", language: "en" },
+  { id: "gnv", name: "Geneva Bible 1599", source: "wldeh", wldehVersion: "en-gnv", bookFormat: "name", language: "en" },
+  { id: "lsv", name: "Literal Standard Version", source: "wldeh", wldehVersion: "en-lsv", bookFormat: "name", language: "en" },
+  { id: "fbv", name: "Free Bible Version", source: "wldeh", wldehVersion: "en-fbv", bookFormat: "name", language: "en" },
+  { id: "rv", name: "Revised Version", source: "wldeh", wldehVersion: "en-rv", bookFormat: "name", language: "en" },
+  { id: "wmb", name: "World Messianic Bible", source: "wldeh", wldehVersion: "en-wmb", bookFormat: "name", language: "en" },
+  { id: "niv", name: "New International Version", source: "rkeplin", bookFormat: "number", language: "en" },
+  { id: "nlt", name: "New Living Translation", source: "rkeplin", bookFormat: "number", language: "en" },
+  { id: "esv", name: "English Standard Version", source: "rkeplin", bookFormat: "number", language: "en" },
+  { id: "dra", name: "Douay-Rheims 1899", source: "wldeh", wldehVersion: "en-dra", bookFormat: "name", language: "en" },
+  { id: "t4t", name: "Translation for Translators", source: "wldeh", wldehVersion: "en-t4t", bookFormat: "name", language: "en" },
+  { id: "webbe", name: "World English Bible (British)", source: "bible-api", bookFormat: "name", language: "en" },
+  { id: "cuv", name: "Chinese Union Version", source: "bible-api", bookFormat: "name", language: "zh" },
+  { id: "bkr", name: "Bible kralická", source: "bible-api", bookFormat: "name", language: "cs" },
+  { id: "almeida", name: "João Ferreira de Almeida", source: "bible-api", bookFormat: "name", language: "pt" },
+  { id: "rccv", name: "Romanian Corrected Cornilescu", source: "bible-api", bookFormat: "name", language: "ro" },
+];
+
+const TRANSLATION_NAMES: Record<string, string> = {};
+const TRANSLATION_IDS: string[] = [];
+for (const t of TRANSLATIONS) {
+  TRANSLATION_NAMES[t.id] = t.name;
+  TRANSLATION_IDS.push(t.id);
+}
+
+function getBookNumber(bookName: string): number {
+  const idx = BOOKS.findIndex((b) => b.name.toLowerCase() === bookName.toLowerCase());
+  return idx >= 0 ? idx + 1 : 1;
+}
+
+function bookNameToSlug(bookName: string): string {
+  return bookName.toLowerCase().replace(/\s+/g, "-");
+}
+
+async function fetchFromBibleApi(book: string, chapter: number, translation: string) {
+  const res = await fetch(`${BIBLE_API}/${encodeURIComponent(book)}+${chapter}?translation=${translation}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return { verses: data.verses || [] };
+}
+
+async function fetchFromWldeh(book: string, chapter: number, version: string) {
+  const slug = bookNameToSlug(book);
+  const res = await fetch(`${CDN}/bibles/${version}/books/${slug}/chapters/${chapter}.json`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const verses = (data.data || []).map((v: { verse: string; text: string }) => ({
+    verse: Number(v.verse),
+    text: v.text,
+  }));
+  return { verses };
+}
+
+async function fetchFromRkeplin(book: string, chapter: number, translation: string) {
+  const bookNum = getBookNumber(book);
+  const res = await fetch(`${RKEPLIN}/books/${bookNum}/chapters/${chapter}?translation=${translation.toUpperCase()}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const verses = (Array.isArray(data) ? data : []).map((v: { verseId: number; verse: string }) => ({
+    verse: v.verseId,
+    text: v.verse,
+  }));
+  return { verses };
+}
+
+async function fetchChapter(book: string, chapter: number, translationId: string) {
+  const info = TRANSLATIONS.find((t) => t.id === translationId);
+  if (!info) return null;
+
+  if (info.source === "bible-api") {
+    return fetchFromBibleApi(book, chapter, translationId);
+  }
+  if (info.source === "wldeh" && info.wldehVersion) {
+    return fetchFromWldeh(book, chapter, info.wldehVersion);
+  }
+  if (info.source === "rkeplin") {
+    return fetchFromRkeplin(book, chapter, translationId);
+  }
+  return null;
+}
+
+bibleRoutes.get("/books", (c) => c.json({
+  books: BOOKS,
+  translations: TRANSLATION_IDS,
+  translationNames: TRANSLATION_NAMES,
+}));
 
 bibleRoutes.get("/verses/:book/:chapter", async (c) => {
   const book = c.req.param("book");
   const chapter = Number(c.req.param("chapter"));
   const translation = c.req.query("translation") || "kjv";
-  const bookParam = encodeURIComponent(book);
+  const translationId = translation.toLowerCase();
 
   try {
-    const res = await fetch(`${BIBLE_API}/${bookParam}+${chapter}?translation=${translation}`);
-    if (!res.ok) {
-      return c.json({ verses: [], error: `bible-api.com returned ${res.status}` });
+    const result = await fetchChapter(book, chapter, translationId);
+    if (!result) {
+      return c.json({ verses: [], book, chapter, translation: translationId, translationName: TRANSLATION_NAMES[translationId] || translationId.toUpperCase() });
     }
-    const data = await res.json();
     return c.json({
-      verses: data.verses || [],
-      book: data.reference || book,
+      verses: result.verses,
+      book,
       chapter,
-      translation,
-      translationName: TRANSLATION_NAMES[translation] || translation.toUpperCase(),
+      translation: translationId,
+      translationName: TRANSLATION_NAMES[translationId] || translationId.toUpperCase(),
     });
   } catch {
-    return c.json({ verses: [], error: "Failed to fetch verses" });
+    return c.json({ verses: [], book, chapter, translation: translationId, translationName: "Error" });
   }
 });
 
@@ -187,16 +284,13 @@ bibleRoutes.get("/daily", async (c) => {
   const idx = dayOfYear % dailyVerses.length;
   const ref = dailyVerses[idx];
   try {
-    const res = await fetch(
-      `${BIBLE_API}/${encodeURIComponent(ref.book)}+${ref.chapter}?translation=${translation}`
-    );
-    if (!res.ok) {
+    const result = await fetchChapter(ref.book, ref.chapter, translation);
+    if (!result) {
       return c.json({ text: "The Lord is my shepherd; I shall not want.", reference: "Psalms 23:1 (KJV)", translation });
     }
-    const data = await res.json();
-    const verse = (data.verses || []).find((v: { verse: number }) => v.verse === ref.verse);
+    const verse = result.verses.find((v: { verse: number }) => v.verse === ref.verse);
     return c.json({
-      text: verse ? verse.text : (data.verses?.[0]?.text || ""),
+      text: verse ? verse.text : (result.verses?.[0]?.text || ""),
       reference: `${ref.book} ${ref.chapter}:${ref.verse}`,
       translation,
     });
@@ -220,10 +314,9 @@ bibleRoutes.get("/search", async (c) => {
     for (let ch = 1; ch <= Math.min(book.chapters, 5); ch++) {
       if (results.length >= 50) break;
       try {
-        const res = await fetch(`${BIBLE_API}/${encodeURIComponent(book.name)}+${ch}?translation=${translation}`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const matches = (data.verses || []).filter(
+        const result = await fetchChapter(book.name, ch, translation);
+        if (!result) continue;
+        const matches = (result.verses || []).filter(
           (v: { verse: number; text: string }) => v.text.toLowerCase().includes(query.toLowerCase())
         );
         for (const m of matches) {
