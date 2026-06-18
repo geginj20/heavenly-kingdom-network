@@ -13,10 +13,12 @@ export default function DonationHistory() {
     e?.preventDefault();
     if (!email) return;
     setLoading(true);
-    const data = await api.donations.history(email);
-    setDonations(data);
+    try {
+      const data = await api.donations.history(email);
+      setDonations(data);
+      localStorage.setItem("hkn-donation-email", email);
+    } catch { setDonations([]); }
     setLoading(false);
-    localStorage.setItem("hkn-donation-email", email);
   }, [email]);
 
   useEffect(() => {

@@ -51,8 +51,10 @@ export default function PrayerWall() {
 
   const fetchPrayers = useCallback(async (category: string) => {
     setLoading(true);
-    const data = await api.prayers.list(category);
-    setPrayers(data);
+    try {
+      const data = await api.prayers.list(category);
+      setPrayers(data);
+    } catch { /* ignore */ }
     setLoading(false);
   }, []);
 
@@ -62,7 +64,7 @@ export default function PrayerWall() {
   }, [activeCategory, fetchPrayers]);
 
   useEffect(() => {
-    api.prayers.getCategories().then(setCategories);
+    api.prayers.getCategories().then(setCategories).catch(() => {});
   }, []);
 
   // Sacred spotlight effect
@@ -81,24 +83,28 @@ export default function PrayerWall() {
   }, []);
 
   const handlePray = async (id: string) => {
-    await api.prayers.pray(id);
-    setPrayers((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, prayers: (p.prayers || 0) + 1 } : p))
-    );
-    showToast("Your prayer has been counted!", "success");
+    try {
+      await api.prayers.pray(id);
+      setPrayers((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, prayers: (p.prayers || 0) + 1 } : p))
+      );
+      showToast("Your prayer has been counted!", "success");
+    } catch {}
   };
 
   const onSubmit = async (data: PrayerForm) => {
-    const created = await api.prayers.submit(data);
-    setPrayers((prev) => [created, ...prev]);
-    reset({ name: "", category: "Guidance", text: "" });
-    showToast("Prayer request submitted!", "success");
+    try {
+      const created = await api.prayers.submit(data);
+      setPrayers((prev) => [created, ...prev]);
+      reset({ name: "", category: "Guidance", text: "" });
+      showToast("Prayer request submitted!", "success");
 
-    setTimeout(() => {
-      setPrayers((prev) =>
-        prev.map((p) => (p.id === created.id ? { ...p, isNew: false } : p))
-      );
-    }, 3000);
+      setTimeout(() => {
+        setPrayers((prev) =>
+          prev.map((p) => (p.id === created.id ? { ...p, isNew: false } : p))
+        );
+      }, 3000);
+    } catch { showToast("Failed to submit prayer.", "error"); }
   };
 
   const handleReply = () => {

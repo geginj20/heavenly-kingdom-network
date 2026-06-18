@@ -17,31 +17,35 @@ export default function PrayerPreviewSection() {
     api.prayers.list().then((data) => {
       setPrayers(data.slice(0, 4));
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const handlePray = async (id: string) => {
-    await api.prayers.pray(id);
-    setPrayers((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, prayers: (p.prayers || 0) + 1 } : p))
-    );
-    showToast("Your prayer has been counted!", "success");
+    try {
+      await api.prayers.pray(id);
+      setPrayers((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, prayers: (p.prayers || 0) + 1 } : p))
+      );
+      showToast("Your prayer has been counted!", "success");
+    } catch {}
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.text.trim()) return;
 
-    const created = await api.prayers.submit(form);
-    setPrayers((prev) => [created, ...prev.slice(0, 3)]);
-    setForm({ name: "", category: "Guidance", text: "" });
-    showToast("Prayer request submitted!", "success");
+    try {
+      const created = await api.prayers.submit(form);
+      setPrayers((prev) => [created, ...prev.slice(0, 3)]);
+      setForm({ name: "", category: "Guidance", text: "" });
+      showToast("Prayer request submitted!", "success");
 
-    setTimeout(() => {
-      setPrayers((prev) =>
-        prev.map((p) => (p.id === created.id ? { ...p, isNew: false } : p))
-      );
-    }, 3000);
+      setTimeout(() => {
+        setPrayers((prev) =>
+          prev.map((p) => (p.id === created.id ? { ...p, isNew: false } : p))
+        );
+      }, 3000);
+    } catch { showToast("Failed to submit prayer.", "error"); }
   };
 
   return (

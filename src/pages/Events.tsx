@@ -41,7 +41,7 @@ export default function Events() {
     api.events.list().then((data) => {
       setEvents(data);
       setLoading(false);
-    });
+    }).catch(() => { setLoading(false); });
   }, []);
 
   const monthStart = startOfMonth(currentMonth);

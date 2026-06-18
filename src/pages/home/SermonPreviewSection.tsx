@@ -15,7 +15,7 @@ export default function SermonPreviewSection() {
     api.sermons.list().then((data) => {
       setSermons(data);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const filteredSermons = sermons
