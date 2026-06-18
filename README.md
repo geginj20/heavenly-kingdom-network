@@ -2,7 +2,7 @@
 
 **Open-source church community platform** connecting believers worldwide through prayer, Bible study, sermons, events, and fellowship.
 
-> **Live Demo:** [hkn-website.pages.dev](https://hkn-website.pages.dev)
+> **Live Demo:** [hkn-website.pages.dev](https://hkn-website.pages.dev) · **GitHub Pages:** [geginj20.github.io/heavenly-kingdom-network](https://geginj20.github.io/heavenly-kingdom-network)
 
 ---
 
