@@ -29,10 +29,7 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  if (!API_BASE) {
-    throw new ApiError(0, "API base URL not configured. Falling back to demo data.");
-  }
-  const url = `${API_BASE}/api${path}`;
+  const url = API_BASE ? `${API_BASE}/api${path}` : `/api${path}`;
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
@@ -236,8 +233,12 @@ export const api = {
       }
     },
     books: async () => {
-      const data = await request<{ books: BibleBook[]; translations: string[]; translationNames: Record<string, string> }>("/bible/books");
-      return data;
+      try {
+        const data = await request<{ books: BibleBook[]; translations: string[]; translationNames: Record<string, string> }>("/bible/books");
+        return data;
+      } catch {
+        return { books: [], translations: ["kjv"], translationNames: { kjv: "King James Version" } };
+      }
     },
     verses: async (book: string, chapter: number, translation = "kjv") => {
       try {
