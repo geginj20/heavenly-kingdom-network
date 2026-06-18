@@ -196,9 +196,9 @@ export default function BibleReader() {
   }
 
   return (
-    <div className="pt-[72px] min-h-screen bg-[#e6eef7]">
+    <div className="pt-[72px] h-screen bg-[#e6eef7] flex flex-col overflow-hidden">
       <SEO title={selectedBook ? `${selectedBook} ${selectedChapter} — Bible` : "Bible"} description="Read the Bible online with multiple translations (KJV, WEB, ASV). Search, bookmark, and take study notes." />
-      <div className="bg-[#0c1b33] py-6 px-4">
+      <div className="bg-[#0c1b33] py-6 px-4 shrink-0 z-10">
         <div className="container-main mx-auto flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <h1 className="font-display text-2xl md:text-3xl font-bold text-white">Holy Bible</h1>
@@ -218,83 +218,14 @@ export default function BibleReader() {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleToggleSearch}
-              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-              title="Search"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </button>
-          </div>
         </div>
-
-        <AnimatePresence>
-          {showSearch && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="container-main mx-auto mt-4">
-                <div className="relative max-w-lg">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input
-                    type="text"
-                    placeholder="Search scripture (min 3 chars)..."
-                    value={searchQuery}
-                    onChange={handleSearchInputChange}
-                    autoFocus
-                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => { setSearchQuery(""); setSearchResults([]); }} className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <X className="w-4 h-4 text-white/50" />
-                    </button>
-                  )}
-                </div>
-                {searching && (
-                  <div className="mt-3 text-sm text-white/50 flex items-center gap-2">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Searching...
-                  </div>
-                )}
-                {searchResults.length > 0 && (
-                  <div className="mt-3 max-h-48 overflow-y-auto bg-[#162a4a] rounded-lg p-3">
-                    <p className="text-xs text-white/40 mb-2">{searchResults.length} results</p>
-                    {searchResults.slice(0, 20).map((r, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          handleBookSelect(r.book);
-                          setSelectedChapter(r.chapter);
-                          setSelectedVerse(r.verse);
-                          setShowSearch(false);
-                          setSearchQuery("");
-                          setSearchResults([]);
-                        }}
-                        className="block w-full text-left px-3 py-2 rounded hover:bg-white/10 text-sm text-white/70 hover:text-white transition-colors"
-                      >
-                        <span className="text-[#d4af37]">{r.book} {r.chapter}:{r.verse}</span>{" "}
-                        {r.text.slice(0, 100)}...
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {searchQuery.length >= 3 && !searching && searchResults.length === 0 && (
-                  <p className="mt-3 text-sm text-white/50">No results found</p>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      <div className="container-main mx-auto px-4 sm:px-6 py-8">
-        <div className="grid lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-3">
+      <div className="container-main mx-auto px-4 sm:px-6 py-6 flex-1 overflow-hidden">
+        <div className="grid lg:grid-cols-12 gap-6 h-full">
+          <div className="lg:col-span-3 h-full overflow-y-auto pr-2 pb-6">
             <ScrollReveal>
-              <div className="bg-white rounded-2xl p-5 shadow-sm lg:sticky lg:top-24 max-h-[calc(100vh-120px)] overflow-y-auto">
+              <div className="bg-white rounded-2xl p-5 shadow-sm">
                 <button
                   onClick={() => setExpandedSection(expandedSection === "old" ? null : "old")}
                   className="flex items-center justify-between w-full mb-2"
@@ -377,9 +308,9 @@ export default function BibleReader() {
             </ScrollReveal>
           </div>
 
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-6 h-full overflow-y-auto pr-2 pb-6">
             <ScrollReveal>
-              <div className="bg-[#f5f0e8] rounded-2xl p-6 sm:p-10 shadow-sm">
+              <div className="bg-[#f5f0e8] rounded-2xl p-6 sm:p-10 shadow-sm min-h-full">
                 <div className="text-center mb-8 pb-6 border-b border-[#0c1b33]/10">
                   <h2 className="font-display text-3xl sm:text-4xl font-bold text-[#0c1b33]">{selectedBook}</h2>
                   <p className="text-sm text-[#6b7c93] mt-1">{versesData?.translationName || ""}</p>
@@ -422,8 +353,76 @@ export default function BibleReader() {
                     >
                       <Plus className="w-4 h-4 text-[#6b7c93]" />
                     </button>
+
+                    <div className="w-px h-4 bg-[#0c1b33]/10 mx-1"></div>
+
+                    <button
+                      onClick={handleToggleSearch}
+                      className={`p-1.5 rounded-lg transition-colors ${showSearch ? 'bg-[#0c1b33] text-[#d4af37]' : 'hover:bg-[#0c1b33]/5 text-[#6b7c93]'}`}
+                      title="Search"
+                    >
+                      <Search className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
+
+                <AnimatePresence>
+                  {showSearch && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mb-6"
+                    >
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7c93]" />
+                        <input
+                          type="text"
+                          placeholder="Search scripture (min 3 chars)..."
+                          value={searchQuery}
+                          onChange={handleSearchInputChange}
+                          autoFocus
+                          className="w-full pl-10 pr-10 py-3 rounded-xl border border-[#0c1b33]/10 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] text-[#0c1b33]"
+                        />
+                        {searchQuery && (
+                          <button onClick={() => { setSearchQuery(""); setSearchResults([]); }} className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <X className="w-4 h-4 text-[#6b7c93]" />
+                          </button>
+                        )}
+                      </div>
+                      {searching && (
+                        <div className="mt-3 text-sm text-[#6b7c93] flex items-center gap-2">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Searching...
+                        </div>
+                      )}
+                      {searchResults.length > 0 && (
+                        <div className="mt-3 max-h-64 overflow-y-auto bg-white rounded-xl border border-[#0c1b33]/5 p-3">
+                          <p className="text-xs text-[#6b7c93] mb-2">{searchResults.length} results</p>
+                          {searchResults.slice(0, 20).map((r, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                handleBookSelect(r.book);
+                                setSelectedChapter(r.chapter);
+                                setSelectedVerse(r.verse);
+                                setShowSearch(false);
+                                setSearchQuery("");
+                                setSearchResults([]);
+                              }}
+                              className="block w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#f8f6f3] text-sm text-[#0c1b33] transition-colors mb-1 last:mb-0"
+                            >
+                              <span className="text-[#8b5e3c] font-semibold">{r.book} {r.chapter}:{r.verse}</span>{" "}
+                              <span className="text-[#6b7c93]">{r.text.slice(0, 100)}...</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchQuery.length >= 3 && !searching && searchResults.length === 0 && (
+                        <p className="mt-3 text-sm text-[#6b7c93]">No results found</p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {loadingVerses ? (
                   <div className="flex items-center justify-center py-16">
@@ -496,9 +495,9 @@ export default function BibleReader() {
             </ScrollReveal>
           </div>
 
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 h-full overflow-y-auto pr-2 pb-6">
             <ScrollReveal>
-              <div className="space-y-6 lg:sticky lg:top-24">
+              <div className="space-y-6">
                 <div className="sm:hidden bg-white rounded-2xl p-5 shadow-sm">
                   <h3 className="font-display text-lg font-semibold text-[#0c1b33] mb-3">Translation</h3>
                   <div className="flex gap-2 flex-wrap">
