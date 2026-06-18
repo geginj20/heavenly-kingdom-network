@@ -18,8 +18,10 @@ export default function Sermons() {
 
   const fetchSermons = useCallback(async (category: string, query: string) => {
     setLoading(true);
-    const data = await api.sermons.list(category, query || undefined);
-    setSermons(data);
+    try {
+      const data = await api.sermons.list(category, query || undefined);
+      setSermons(data);
+    } catch { setSermons([]); }
     setLoading(false);
   }, []);
 
@@ -29,7 +31,7 @@ export default function Sermons() {
   }, [activeCategory, searchQuery, fetchSermons]);
 
   useEffect(() => {
-    api.sermons.getCategories().then(setCategories);
+    api.sermons.getCategories().then(setCategories).catch(() => {});
   }, []);
 
   const sortedSermons = [...sermons].sort((a, b) => {

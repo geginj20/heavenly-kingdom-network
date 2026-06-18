@@ -8,8 +8,10 @@ export default function LiveStreamSection() {
   const [upcomingStreams, setUpcomingStreams] = useState<{ id: string; title: string; host: string; time: string }[]>([]);
 
   useEffect(() => { (async () => {
-    const data = await api.streams.upcoming();
-    setUpcomingStreams(data);
+    try {
+      const data = await api.streams.upcoming();
+      setUpcomingStreams(data);
+    } catch {}
   })(); }, []);
   return (
     <section

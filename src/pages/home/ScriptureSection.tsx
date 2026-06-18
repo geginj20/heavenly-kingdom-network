@@ -17,7 +17,7 @@ export default function ScriptureSection() {
   useEffect(() => {
     api.bible.dailyVerse(activeTranslation).then((data) => {
       setScripture({ text: data.text, reference: data.reference });
-    });
+    }).catch(() => {});
   }, [activeTranslation]);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function ScriptureSection() {
           name: translationNames[code] || code.toUpperCase(),
         }))
       );
-    });
+    }).catch(() => {});
   }, []);
 
   if (!scripture) {

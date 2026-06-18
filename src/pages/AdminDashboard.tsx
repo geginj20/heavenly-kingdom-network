@@ -20,8 +20,8 @@ import {
   Pencil,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Sermon, Event } from "../data/demoData";
-import { adminStats as fallbackStats, adminPrayers as fallbackPrayers, demoSermons as fallbackSermons, demoEvents as fallbackEvents } from "../data/demoData";
+interface AdminSermon { id: string; title: string; speaker: string; ministry: string; duration: string; category: string; thumbnail: string; date: string; }
+interface AdminEvent { id: string; title: string; date: string; day: string; month: string; time: string; timezone: string; location: string; isOnline: boolean; image: string; description: string; }
 import { useToast } from "../lib/toast";
 import SEO from "../components/SEO";
 import { api } from "../lib/api";
@@ -61,14 +61,14 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [prayerFilter, setPrayerFilter] = useState("all");
   const [showEventModal, setShowEventModal] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<AdminEvent | null>(null);
   const [showSermonModal, setShowSermonModal] = useState(false);
-  const [editingSermon, setEditingSermon] = useState<Sermon | null>(null);
+  const [editingSermon, setEditingSermon] = useState<AdminSermon | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [stats, setStats] = useState(fallbackStats);
-  const [prayers, setPrayers] = useState<AdminPrayer[]>(fallbackPrayers.map(normalizePrayer));
-  const [sermons, setSermons] = useState<Sermon[]>(fallbackSermons);
-  const [events, setEvents] = useState(fallbackEvents);
+  const [stats, setStats] = useState({ totalUsers: 0, totalPrayers: 0, pendingPrayers: 0, totalSermons: 0, monthlyGiving: 0, activeEvents: 0, totalYtd: 0, donorCount: 0 });
+  const [prayers, setPrayers] = useState<AdminPrayer[]>([]);
+  const [sermons, setSermons] = useState<AdminSermon[]>([]);
+  const [events, setEvents] = useState<AdminEvent[]>([]);
   const [adminUsers, setAdminUsers] = useState<{ id: number; name: string; email: string; role: string; status: string }[]>([]);
   const [donations, setDonations] = useState<{ name: string; amount: number; date: string; recurring: boolean }[]>([]);
   const { showToast } = useToast();
@@ -79,35 +79,27 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => { (async () => {
-    const data = await api.admin.stats();
-    setStats(data);
+    try { setStats(await api.admin.stats()); } catch {}
   })(); }, []);
 
   useEffect(() => { (async () => {
-    const data = await api.admin.prayers(prayerFilter);
-    setPrayers(data.map(normalizePrayer));
+    try { setPrayers((await api.admin.prayers(prayerFilter)).map(normalizePrayer)); } catch {}
   })(); }, [prayerFilter]);
 
   useEffect(() => { (async () => {
-    try {
-      const data = await api.events.list();
-      setEvents(data);
-    } catch { setEvents(fallbackEvents); }
+    try { setEvents(await api.events.list()); } catch {}
   })(); }, []);
 
   useEffect(() => { (async () => {
-    const data = await api.admin.users();
-    setAdminUsers(data);
+    try { setAdminUsers(await api.admin.users()); } catch {}
   })(); }, []);
 
   useEffect(() => { (async () => {
-    const data = await api.admin.donations();
-    setDonations(data);
+    try { setDonations(await api.admin.donations()); } catch {}
   })(); }, []);
 
   useEffect(() => { (async () => {
-    const data = await api.sermons.list();
-    setSermons(data);
+    try { setSermons(await api.sermons.list()); } catch {}
   })(); }, []);
 
   const handlePrayerAction = async (id: number, action: string) => {
@@ -664,8 +656,8 @@ export default function AdminDashboard() {
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
                   { label: "This Month", value: `$${stats.monthlyGiving.toLocaleString()}`, color: "text-[#d4af37]" },
-                  { label: "Total YTD", value: "$142,380", color: "text-green-400" },
-                  { label: "Donors", value: "234", color: "text-blue-400" },
+                  { label: "Total YTD", value: `$${stats.totalYtd?.toLocaleString() || "0"}`, color: "text-green-400" },
+                  { label: "Donors", value: String(stats.donorCount || 0), color: "text-blue-400" },
                 ].map((stat) => (
                   <motion.div
                     key={stat.label}

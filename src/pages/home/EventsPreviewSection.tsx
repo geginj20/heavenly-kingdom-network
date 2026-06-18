@@ -13,7 +13,7 @@ export default function EventsPreviewSection() {
     api.events.list().then((data) => {
       setEvents(data.slice(0, 4));
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   return (

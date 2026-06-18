@@ -161,8 +161,10 @@ export default function BibleReader() {
     if (searchTimer) clearTimeout(searchTimer);
     const timer = setTimeout(async () => {
       setSearching(true);
-      const data = await api.bible.search(val, activeTranslation);
-      setSearchResults(data.results || []);
+      try {
+        const data = await api.bible.search(val, activeTranslation);
+        setSearchResults(data.results || []);
+      } catch { setSearchResults([]); }
       setSearching(false);
     }, 400);
     setSearchTimer(timer);
