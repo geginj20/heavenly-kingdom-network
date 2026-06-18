@@ -255,7 +255,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
             {mode === "login" ? "Welcome Back" : "Create Account"}
           </h1>
           <p className="text-sm text-white/50">
-            {mode === "login" ? "Sign in to manage the platform" : "Join the Heavenly Kingdom Network"}
+            {mode === "login" ? "Sign in to manage the platform" : "Join the Kingdom Mission Network"}
           </p>
         </div>
 

@@ -127,7 +127,7 @@ paymentRoutes.post("/paypal/create", zValidator("json", z.object({
       intent: "CAPTURE",
       purchase_units: [{
         amount: { currency_code: currency, value: amount.toFixed(2) },
-        description: "Donation to Heavenly Kingdom Network",
+        description: "Donation to Kingdom Mission Network",
       }],
     }),
   });

@@ -7,7 +7,7 @@ interface SEOProps {
   url?: string;
 }
 
-const SITE_NAME = "Heavenly Kingdom Network";
+const SITE_NAME = "Kingdom Mission Network";
 const DEFAULT_DESC = "A global community of believers united in faith, prayer, and worship. Join us for sermons, events, and daily Bible study.";
 
 export default function SEO({ title, description, image, url }: SEOProps) {

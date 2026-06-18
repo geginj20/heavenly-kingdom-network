@@ -1,4 +1,4 @@
-# Contributing to Heavenly Kingdom Network
+# Contributing to Kingdom Mission Network
 
 We welcome contributions from the community! This is an open-source Christian platform, and every contribution helps us serve more believers worldwide.
 

@@ -45,7 +45,7 @@ export default function DonationHistory() {
             Back to Home
           </Link>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-white">Giving History</h1>
-          <p className="text-white/60 mt-2">View your past donations to Heavenly Kingdom Network.</p>
+          <p className="text-white/60 mt-2">View your past donations to Kingdom Mission Network.</p>
         </div>
       </div>
 

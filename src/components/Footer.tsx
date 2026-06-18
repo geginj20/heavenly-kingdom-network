@@ -43,8 +43,8 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-4">
-              <img src="./logo.png" alt="Heavenly Kingdom Network" className="h-8 w-auto" />
-              <span className="font-display text-xl font-bold">Heavenly Kingdom Network</span>
+              <img src="./logo.png" alt="Kingdom Mission Network" className="h-8 w-auto" />
+              <span className="font-display text-xl font-bold">Kingdom Mission Network</span>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed max-w-sm mb-6">
               A global, open-source platform connecting Christian believers worldwide through
@@ -133,7 +133,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/40 flex items-center gap-1">
-            &copy; 2026 Heavenly Kingdom Network.
+            &copy; 2026 Kingdom Mission Network.
             <Heart className="w-3 h-3 text-red-500 fill-red-500" />
           </p>
           <div className="flex items-center gap-4 text-xs text-white/40">
