@@ -63,11 +63,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Verify API token
-        run: npx wrangler whoami
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy dist --project-name=hkn-website --branch production
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          TOKEN="$(printf '%s' "$CF_TOKEN" | tr -d '\n\r')"
+          CLOUDFLARE_API_TOKEN="$TOKEN" npx wrangler whoami 2>&1
+          CLOUDFLARE_API_TOKEN="$TOKEN" npx wrangler pages deploy dist --project-name=hkn-website --branch production
