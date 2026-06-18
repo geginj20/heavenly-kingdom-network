@@ -50,8 +50,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/geginj20/hkn-website.git
-cd hkn-website
+git clone https://github.com/geginj20/heavenly-kingdom-network.git
+cd heavenly-kingdom-network
 
 # Install dependencies
 npm install
