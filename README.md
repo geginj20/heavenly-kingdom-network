@@ -12,7 +12,7 @@
 - **Bible Reader** — Read scripture with **22 translations** from 3 API sources (bible-api.com, wldeh/bible-api CDN, rkeplin). Includes KJV, WEB, ASV, BSB, NIV, NLT, ESV, Geneva Bible, and more. Quick-access navigation by book/chapter, verse copy, bookmarking, and study notes.
 - **Sermon Library** — Searchable collection of teachings from ministries worldwide. Filter by category, speaker, or keyword.
 - **Events Calendar** — Interactive calendar with RSVP, online/offline events, and event management.
-- **Live Streaming Directory** — Directory of upcoming live worship services, online events, and broadcast links.
+- **Upcoming Streams** — Schedule of upcoming live worship services and online events with time, title, and host information.
 - **Donations & Giving** — Multi-gateway payments: Paystack (cards + M-Pesa), PayPal. 10 currencies supported.
 - **Admin Dashboard** — Manage users, moderate prayer requests, create/edit/delete sermons and events, view donation analytics, and platform settings.
 - **User Authentication** — Login, registration, forgot/reset password, JWT-based sessions.

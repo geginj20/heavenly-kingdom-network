@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Prevent .env from being committed
+if git diff --cached --name-only | grep -q '^\.env$'; then
+  echo "ERROR: .env file is staged for commit."
+  echo "  .env contains environment-specific secrets and must not be committed."
+  echo "  If you need to add new env vars, update .env.example instead."
+  exit 1
+fi

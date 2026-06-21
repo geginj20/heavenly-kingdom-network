@@ -23,6 +23,16 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm audit --audit-level=high
+      - name: Check no .env committed
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "ERROR: .env is tracked by git. Remove it with: git rm --cached .env"
+            exit 1
+          fi
+          if [ -f .env ]; then
+            echo "WARNING: .env file exists on disk but is not tracked"
+          fi
+          echo "OK: .env is not tracked"
       - run: npm run lint
       - run: npm run test
       - run: npx playwright install --with-deps
