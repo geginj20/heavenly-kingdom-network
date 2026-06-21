@@ -21,7 +21,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run test
@@ -47,7 +47,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm audit --audit-level=high
       - run: npx tsc --noEmit
       - run: npm run test
@@ -67,7 +67,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Deploy to Cloudflare Pages
         env:
           CF_TOKEN: ${{ secrets.CF_API_TOKEN }}
