@@ -2,8 +2,11 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
+import { rateLimit } from "../lib/rateLimiter";
 
 export const bibleRoutes = new Hono();
+
+const searchCache = new Map<string, { time: number; results: unknown }>();
 
 const BIBLE_API = "https://bible-api.com";
 const CDN = "https://cdn.jsdelivr.net/gh/wldeh/bible-api@latest";
@@ -299,12 +302,18 @@ bibleRoutes.get("/daily", async (c) => {
   }
 });
 
-bibleRoutes.get("/search", async (c) => {
+bibleRoutes.get("/search", rateLimit, async (c) => {
   const query = c.req.query("q");
   const translation = (c.req.query("translation") || "kjv") as string;
 
   if (!query || query.length < 3) {
     return c.json({ results: [], error: "Query must be at least 3 characters" });
+  }
+
+  const cacheKey = `${query.toLowerCase()}:${translation}`;
+  const cached = searchCache.get(cacheKey);
+  if (cached && Date.now() - cached.time < 1000 * 60 * 60) {
+    return c.json(cached.results);
   }
 
   const results: Array<{ book: string; chapter: number; verse: number; text: string }> = [];
@@ -331,7 +340,9 @@ bibleRoutes.get("/search", async (c) => {
     }
   }
 
-  return c.json({ results, query, translation });
+  const payload = { results, query, translation };
+  searchCache.set(cacheKey, { time: Date.now(), results: payload });
+  return c.json(payload);
 });
 
 const noteSchema = z.object({

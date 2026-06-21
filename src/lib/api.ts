@@ -13,6 +13,7 @@ class ApiError extends Error {
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = API_BASE ? `${API_BASE}/api${path}` : `/api${path}`;
   const res = await fetch(url, {
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
   });
@@ -41,7 +42,7 @@ type AuthUser = { id: number; name: string; email: string; role: string; avatar?
 export const api = {
   getToken,
   setToken(token: string) {
-    localStorage.setItem("hkn-token", token);
+    // Token is now set via httpOnly cookie by the backend
   },
   clearToken() {
     localStorage.removeItem("hkn-token");
@@ -195,7 +196,7 @@ export const api = {
       });
     },
     history: async (email: string): Promise<{ amount: number; donor_name: string; donor_email: string; recurring: boolean; created_at: string }[]> => {
-      return await request(`/donations/history?email=${encodeURIComponent(email)}`);
+      return await request(`/donations/history?email=${encodeURIComponent(email)}`, { headers: authHeaders() });
     },
   },
 

@@ -13,7 +13,16 @@ import { paymentRoutes } from "./routes/payments";
 
 const app = new Hono();
 
-app.use("*", cors());
+app.use("*", cors({
+  origin: (origin) => {
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    if (!origin || origin.startsWith("http://localhost:") || origin === frontendUrl) {
+      return origin || frontendUrl;
+    }
+    return frontendUrl;
+  },
+  credentials: true,
+}));
 app.use("*", logger());
 
 app.get("/api/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
