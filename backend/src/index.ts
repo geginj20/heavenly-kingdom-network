@@ -10,6 +10,7 @@ import { adminRoutes } from "./routes/admin";
 import { streamRoutes } from "./routes/streams";
 import { donationRoutes } from "./routes/donations";
 import { paymentRoutes } from "./routes/payments";
+import * as Sentry from "@sentry/cloudflare";
 
 const app = new Hono();
 
@@ -37,4 +38,13 @@ app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
 
-export default app;
+export default {
+  fetch: (request: Request, env: Record<string, string>, ctx: ExecutionContext) => {
+    Sentry.init({
+      dsn: env.SENTRY_DSN || "",
+    });
+    return Sentry.withSentry(env, ctx, () => {
+      return app.fetch(request, env, ctx);
+    });
+  }
+};

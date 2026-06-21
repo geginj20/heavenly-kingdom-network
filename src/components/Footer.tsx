@@ -60,19 +60,19 @@ export default function Footer() {
                 <Github className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="/"
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#d4af37]/20 transition-colors"
               >
                 <Twitter className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="/"
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#d4af37]/20 transition-colors"
               >
                 <Youtube className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="/"
                 className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#d4af37]/20 transition-colors"
               >
                 <Mail className="w-4 h-4" />

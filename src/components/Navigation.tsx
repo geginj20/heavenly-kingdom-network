@@ -128,6 +128,10 @@ export default function Navigation() {
             <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
+              onKeyDown={(e) => e.key === 'Escape' && setMobileOpen(false)}
+              role="button"
+              tabIndex={0}
+              aria-label="Close menu"
             />
             <motion.div
               initial={{ x: "100%" }}

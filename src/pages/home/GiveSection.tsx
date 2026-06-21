@@ -218,11 +218,12 @@ export default function GiveSection() {
           <div className="max-w-lg mx-auto">
             {/* Currency Selector */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[#0c1b33] mb-2">
+              <label htmlFor="currency-select" className="block text-sm font-medium text-[#0c1b33] mb-2">
                 <Globe className="w-4 h-4 inline mr-1" />
                 Currency
               </label>
               <select
+                id="currency-select"
                 value={currency}
                 onChange={(e) => {
                   setCurrency(e.target.value);

@@ -70,10 +70,11 @@ export default function PrayerPreviewSection() {
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#0c1b33] mb-1">
+                  <label htmlFor="prayer-name" className="block text-sm font-medium text-[#0c1b33] mb-1">
                     Your Name (optional)
                   </label>
                   <input
+                    id="prayer-name"
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -82,10 +83,11 @@ export default function PrayerPreviewSection() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#0c1b33] mb-1">
+                  <label htmlFor="prayer-category" className="block text-sm font-medium text-[#0c1b33] mb-1">
                     Category
                   </label>
                   <select
+                    id="prayer-category"
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-lg border border-[#0c1b33]/10 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] text-sm"
@@ -96,10 +98,11 @@ export default function PrayerPreviewSection() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#0c1b33] mb-1">
+                  <label htmlFor="prayer-text" className="block text-sm font-medium text-[#0c1b33] mb-1">
                     Prayer Request
                   </label>
                   <textarea
+                    id="prayer-text"
                     value={form.text}
                     onChange={(e) => setForm({ ...form, text: e.target.value })}
                     placeholder="Share your prayer request..."

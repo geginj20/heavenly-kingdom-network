@@ -787,8 +787,9 @@ export default function AdminDashboard() {
               </div>
               <form onSubmit={handleCreateEvent} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Event Title</label>
+                  <label htmlFor="create-title" className="block text-sm text-white/60 mb-1">Event Title</label>
                   <input
+                    id="create-title"
                     name="title"
                     type="text"
                     placeholder="Enter event title"
@@ -797,16 +798,18 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Date</label>
+                    <label htmlFor="create-date" className="block text-sm text-white/60 mb-1">Date</label>
                     <input
+                      id="create-date"
                       name="date"
                       type="date"
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Time</label>
+                    <label htmlFor="create-time" className="block text-sm text-white/60 mb-1">Time</label>
                     <input
+                      id="create-time"
                       name="time"
                       type="time"
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
@@ -814,8 +817,9 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Location</label>
+                  <label htmlFor="create-location" className="block text-sm text-white/60 mb-1">Location</label>
                   <input
+                    id="create-location"
                     name="location"
                     type="text"
                     placeholder="Physical location or 'Online'"
@@ -823,8 +827,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Description</label>
+                  <label htmlFor="create-description" className="block text-sm text-white/60 mb-1">Description</label>
                   <textarea
+                    id="create-description"
                     name="description"
                     rows={3}
                     placeholder="Event description..."
@@ -868,8 +873,9 @@ export default function AdminDashboard() {
               </div>
               <form onSubmit={handleEditEvent} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Event Title</label>
+                  <label htmlFor="edit-title" className="block text-sm text-white/60 mb-1">Event Title</label>
                   <input
+                    id="edit-title"
                     name="title"
                     type="text"
                     defaultValue={editingEvent.title}
@@ -878,8 +884,9 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Date</label>
+                    <label htmlFor="edit-date" className="block text-sm text-white/60 mb-1">Date</label>
                     <input
+                      id="edit-date"
                       name="date"
                       type="date"
                       defaultValue={editingEvent.date}
@@ -887,8 +894,9 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Time</label>
+                    <label htmlFor="edit-time" className="block text-sm text-white/60 mb-1">Time</label>
                     <input
+                      id="edit-time"
                       name="time"
                       type="time"
                       defaultValue={editingEvent.time}
@@ -897,8 +905,9 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Location</label>
+                  <label htmlFor="edit-location" className="block text-sm text-white/60 mb-1">Location</label>
                   <input
+                    id="edit-location"
                     name="location"
                     type="text"
                     defaultValue={editingEvent.location}
@@ -906,8 +915,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Description</label>
+                  <label htmlFor="edit-description" className="block text-sm text-white/60 mb-1">Description</label>
                   <textarea
+                    id="edit-description"
                     name="description"
                     rows={3}
                     defaultValue={editingEvent.description}
@@ -953,8 +963,9 @@ export default function AdminDashboard() {
               </div>
               <form onSubmit={handleSermonSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Title</label>
+                  <label htmlFor="sermon-title" className="block text-sm text-white/60 mb-1">Title</label>
                   <input
+                    id="sermon-title"
                     name="title"
                     type="text"
                     defaultValue={editingSermon?.title}
@@ -963,8 +974,9 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Speaker</label>
+                    <label htmlFor="sermon-speaker" className="block text-sm text-white/60 mb-1">Speaker</label>
                     <input
+                      id="sermon-speaker"
                       name="speaker"
                       type="text"
                       defaultValue={editingSermon?.speaker}
@@ -972,8 +984,9 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Ministry</label>
+                    <label htmlFor="sermon-ministry" className="block text-sm text-white/60 mb-1">Ministry</label>
                     <input
+                      id="sermon-ministry"
                       name="ministry"
                       type="text"
                       defaultValue={editingSermon?.ministry}
@@ -983,8 +996,9 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Duration</label>
+                    <label htmlFor="sermon-duration" className="block text-sm text-white/60 mb-1">Duration</label>
                     <input
+                      id="sermon-duration"
                       name="duration"
                       type="text"
                       defaultValue={editingSermon?.duration}
@@ -993,8 +1007,9 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-white/60 mb-1">Category</label>
+                    <label htmlFor="sermon-category" className="block text-sm text-white/60 mb-1">Category</label>
                     <input
+                      id="sermon-category"
                       name="category"
                       type="text"
                       defaultValue={editingSermon?.category}
@@ -1004,8 +1019,9 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">Thumbnail URL</label>
+                  <label htmlFor="sermon-thumbnail" className="block text-sm text-white/60 mb-1">Thumbnail URL</label>
                   <input
+                    id="sermon-thumbnail"
                     name="thumbnail"
                     type="text"
                     defaultValue={editingSermon?.thumbnail}
