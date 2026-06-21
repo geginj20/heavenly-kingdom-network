@@ -12,8 +12,8 @@ test.describe('Core User Journeys', () => {
     await page.goto('/');
     await page.click('text=Scriptures');
     await expect(page.locator('h1', { hasText: 'Holy Bible' })).toBeVisible();
-    const searchInput = page.locator('input[placeholder*="Search"]');
-    await expect(searchInput).toBeVisible();
+    await page.click('button[title="Search"]');
+    await expect(page.locator('input[placeholder*="Search scripture"]')).toBeVisible();
   });
 
   test('can view events', async ({ page }) => {
@@ -22,10 +22,10 @@ test.describe('Core User Journeys', () => {
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
 
-  test('can navigate to Give page', async ({ page }) => {
+  test('can navigate to Give section', async ({ page }) => {
     await page.goto('/');
     await page.click('text=Give');
-    await expect(page.locator('h1', { hasText: 'Give' })).toBeVisible();
+    await expect(page.locator('h2', { hasText: 'Support the Mission' })).toBeVisible();
   });
 
   test('can navigate home and see featured content', async ({ page }) => {

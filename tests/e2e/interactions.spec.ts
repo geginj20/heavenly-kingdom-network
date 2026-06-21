@@ -45,7 +45,7 @@ test.describe('Interactive User Journeys', () => {
     const firstBook = page.locator('button:has-text("Genesis"), div:has-text("Genesis")').first();
     if (await firstBook.isVisible()) {
       await firstBook.click();
-      await expect(page.locator('text=Chapter')).toBeVisible();
+      await expect(page.locator('text=Chapter 1').first()).toBeVisible();
     }
   });
 
