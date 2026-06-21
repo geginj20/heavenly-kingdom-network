@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       const res = await api.auth.login(email, password);
-      api.setToken(res.token);
+      api.setToken();
       setUser(res.user as User);
       return true;
     } catch {
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (name: string, email: string, password: string) => {
     try {
       const res = await api.auth.register(name, email, password);
-      api.setToken(res.token);
+      api.setToken();
       setUser(res.user as User);
       return { ok: true };
     } catch (e: unknown) {
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = useCallback(async (token: string) => {
     try {
       const res = await api.auth.google(token);
-      api.setToken(res.token);
+      api.setToken();
       setUser(res.user as User);
       return true;
     } catch {
