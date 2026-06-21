@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
+import { Resend } from "resend";
 
 function getSecret(c: { env?: unknown }, key: string): string {
   const env = c.env as Record<string, string> | undefined;
@@ -46,6 +47,20 @@ async function wiseGet(path: string, token: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.json();
+}
+
+async function sendDonationEmail(c: { env?: unknown }, email: string, name: string, amount: number, currency: string) {
+  if (!email) return;
+  const resendKey = getSecret(c, "RESEND_API_KEY");
+  if (resendKey) {
+    const resend = new Resend(resendKey);
+    await resend.emails.send({
+      from: "Kingdom Mission Network <giving@heavenlykingdomnetwork.org>",
+      to: email,
+      subject: "Thank you for your Donation",
+      html: `<p>Hi ${name || 'Anonymous'},</p><p>We have successfully received your donation of ${amount} ${currency}. Thank you for your generosity!</p>`,
+    });
+  }
 }
 
 export const paymentRoutes = new Hono();
@@ -97,6 +112,9 @@ paymentRoutes.get("/verify/:reference", async (c) => {
       payment_reference: reference,
       status: "completed",
     });
+    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
+    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
+    await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
   }
 
   return c.json({ status: data.status, amount: (data.amount as number) / 100, currency: data.currency });
@@ -131,6 +149,9 @@ paymentRoutes.post("/webhook", async (c) => {
       payment_reference: data.reference as string,
       status: "completed",
     });
+    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
+    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
+    await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
   }
 
   return c.json({ received: true });
@@ -173,16 +194,21 @@ paymentRoutes.post("/paypal/capture", zValidator("json", z.object({
     const pu = (data.purchase_units as Record<string, unknown>[])?.[0];
     const amount = pu?.amount as Record<string, unknown>;
     const paypalData = data.payer as Record<string, unknown>;
+    const parsedAmount = parseFloat(amount?.value as string) || 0;
+    const currencyCode = (amount?.currency_code as string) || "USD";
+    const donorEmail = (paypalData?.email_address as string) || "";
+    const donorName = (paypalData?.name as Record<string, unknown>)?.given_name as string || "";
     await supabase.from("donations").insert({
-      amount: parseFloat(amount?.value as string) || 0,
-      currency: (amount?.currency_code as string) || "USD",
-      donor_email: (paypalData?.email_address as string) || "",
-      donor_name: (paypalData?.name as Record<string, unknown>)?.given_name as string || "",
+      amount: parsedAmount,
+      currency: currencyCode,
+      donor_email: donorEmail,
+      donor_name: donorName,
       recurring: false,
       payment_provider: "paypal",
       payment_reference: data.id as string,
       status: "completed",
     });
+    await sendDonationEmail(c, donorEmail, donorName, parsedAmount, currencyCode);
   }
 
   return c.json({ status: data.status, id: data.id });

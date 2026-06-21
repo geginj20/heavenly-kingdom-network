@@ -9,10 +9,14 @@ CREATE TABLE "bible_notes" (
 --> statement-breakpoint
 CREATE TABLE "donations" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"email" text,
+	"donor_name" text NOT NULL,
+	"donor_email" text,
 	"amount" integer NOT NULL,
+	"currency" text DEFAULT 'KES',
 	"recurring" boolean DEFAULT false,
+	"payment_provider" text,
+	"payment_reference" text,
+	"status" text DEFAULT 'completed',
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint

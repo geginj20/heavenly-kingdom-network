@@ -79,9 +79,13 @@ export const bibleNotes = pgTable("bible_notes", {
 
 export const donations = pgTable("donations", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email"),
+  donorName: text("donor_name").notNull(),
+  donorEmail: text("donor_email"),
   amount: integer("amount").notNull(),
+  currency: text("currency").default("KES"),
   recurring: boolean("recurring").default(false),
+  paymentProvider: text("payment_provider"),
+  paymentReference: text("payment_reference"),
+  status: text("status").default("completed"),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -1,5 +1,5 @@
 {
-  "id": "1915043f-c0c9-4782-9d3a-5dc061c4645c",
+  "id": "b9f8c465-b977-4ebd-ae5d-88f6108fd0b2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -78,14 +78,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "donor_name": {
+          "name": "donor_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "email": {
-          "name": "email",
+        "donor_email": {
+          "name": "donor_email",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -96,12 +96,38 @@
           "primaryKey": false,
           "notNull": true
         },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'KES'"
+        },
         "recurring": {
           "name": "recurring",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "payment_provider": {
+          "name": "payment_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payment_reference": {
+          "name": "payment_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'completed'"
         },
         "created_at": {
           "name": "created_at",
