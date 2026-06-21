@@ -383,7 +383,6 @@ export default function BibleReader() {
                           placeholder="Search scripture (min 3 chars)..."
                           value={searchQuery}
                           onChange={handleSearchInputChange}
-                          autoFocus
                           className="w-full pl-10 pr-10 py-3 rounded-xl border border-[#0c1b33]/10 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] text-[#0c1b33]"
                         />
                         {searchQuery && (

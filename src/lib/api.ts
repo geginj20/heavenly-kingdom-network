@@ -41,7 +41,7 @@ type AuthUser = { id: number; name: string; email: string; role: string; avatar?
 
 export const api = {
   getToken,
-  setToken(_token: string) {
+  setToken() {
     // Token is now set via httpOnly cookie by the backend
   },
   clearToken() {

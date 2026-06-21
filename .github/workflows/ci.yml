@@ -25,6 +25,8 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run test
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
