@@ -1,4 +1,4 @@
-import { expect, test, describe, vi, beforeAll } from 'vitest';
+import { expect, test, describe, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { paymentRoutes } from './payments';
 

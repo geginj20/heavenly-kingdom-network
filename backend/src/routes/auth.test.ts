@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { expect, test, describe, vi, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { authRoutes } from './auth';
@@ -34,7 +35,7 @@ describe('Auth Routes', () => {
         insert: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: { id: '1', name: 'Test', email: 'test@test.com', role: 'member' }, error: null }),
       }),
-    } as any);
+    } as unknown as SupabaseClient);
   });
 
   test('POST /login with valid credentials', async () => {

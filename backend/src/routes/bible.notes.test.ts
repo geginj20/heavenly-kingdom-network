@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { expect, test, describe, vi, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { bibleRoutes } from './bible';
@@ -23,7 +24,7 @@ describe('Bible Notes', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: null }),
       }),
-    } as any);
+    } as unknown as SupabaseClient);
   });
 
   test('POST /notes rejects missing book', async () => {

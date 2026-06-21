@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { expect, test, describe, vi, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { streamRoutes } from './streams';
@@ -18,7 +19,7 @@ describe('Stream Routes', () => {
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockResolvedValue({ data: [], error: null }),
       }),
-    } as any);
+    } as unknown as SupabaseClient);
   });
 
   test('GET /upcoming returns fallback streams when DB empty', async () => {
@@ -37,7 +38,7 @@ describe('Stream Routes', () => {
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockResolvedValue({ data: [{ id: '1', title: 'Live Stream' }], error: null }),
       }),
-    } as any);
+    } as unknown as SupabaseClient);
 
     const res = await app.request('/upcoming');
     expect(res.status).toBe(200);

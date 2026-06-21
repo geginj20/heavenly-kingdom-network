@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { expect, test, describe, vi, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { eventRoutes } from './events';
@@ -36,7 +37,7 @@ describe('Event Routes', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
       }),
-    } as any);
+    } as unknown as SupabaseClient);
   });
 
   test('GET / returns event list', async () => {

@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { expect, test, describe, vi, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import { prayerRoutes } from './prayers';
@@ -34,7 +35,7 @@ describe('Prayer Routes', () => {
         single: mockSingle,
       }),
       rpc: mockRpc,
-    } as any);
+    } as unknown as SupabaseClient);
   });
 
   test('GET / returns prayer list', async () => {
