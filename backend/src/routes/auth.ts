@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { signToken, verifyToken } from "../lib/jwt";
 import { rateLimit, strictRateLimit } from "../lib/rateLimiter";
-import { setCookie } from "hono/cookie";
+import { setCookie, getCookie } from "hono/cookie";
 
 export const authRoutes = new Hono();
 
@@ -151,7 +151,7 @@ authRoutes.post("/reset-password", zValidator("json", z.object({
 
 authRoutes.get("/me", async (c) => {
   const authHeader = c.req.header("Authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : getCookie(c, "token");
 
   if (!token) {
     return c.json({ error: "No token provided" }, 401);

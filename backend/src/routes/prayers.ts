@@ -40,7 +40,7 @@ prayerRoutes.post("/", rateLimit, zValidator("json", createPrayerSchema), async 
   return c.json(prayer, 201);
 });
 
-prayerRoutes.post("/:id/pray", async (c) => {
+prayerRoutes.post("/:id/pray", rateLimit, async (c) => {
   const supabase = getSupabase();
   const id = Number(c.req.param("id"));
   const { data: prayer, error } = await supabase.rpc("increment_prayer_count", { p_id: id }).single();
@@ -65,7 +65,7 @@ const commentSchema = z.object({
   text: z.string().min(1).max(500),
 });
 
-prayerRoutes.post("/:id/comments", zValidator("json", commentSchema), async (c) => {
+prayerRoutes.post("/:id/comments", rateLimit, zValidator("json", commentSchema), async (c) => {
   const supabase = getSupabase();
   const prayerId = Number(c.req.param("id"));
   const { name, text } = c.req.valid("json");

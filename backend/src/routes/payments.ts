@@ -67,7 +67,7 @@ export const paymentRoutes = new Hono();
 
 paymentRoutes.post("/initialize", zValidator("json", z.object({
   email: z.string().email(),
-  amount: z.number().positive(),
+  amount: z.number().positive().max(1_000_000),
   currency: z.string().default("KES"),
   metadata: z.record(z.string(), z.unknown()).optional(),
 })), async (c) => {
@@ -102,19 +102,19 @@ paymentRoutes.get("/verify/:reference", async (c) => {
 
   if (data.status === "success") {
     const supabase = getSupabase();
-    await supabase.from("donations").insert({
+    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
+    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
+    const { error: upsertErr } = await supabase.from("donations").upsert({
       amount: (data.amount as number) / 100,
       currency: data.currency || "KES",
-      donor_email: data.customer ? (data.customer as Record<string, unknown>).email : "",
-      donor_name: data.metadata ? (data.metadata as Record<string, unknown>).name || "" : "",
+      donor_email: donorEmail,
+      donor_name: donorName,
       recurring: false,
       payment_provider: "paystack",
       payment_reference: reference,
       status: "completed",
-    });
-    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
-    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
-    await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
+    }, { onConflict: "payment_reference", ignoreDuplicates: true });
+    if (!upsertErr) await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
   }
 
   return c.json({ status: data.status, amount: (data.amount as number) / 100, currency: data.currency });
@@ -139,33 +139,50 @@ paymentRoutes.post("/webhook", async (c) => {
 
   if (event === "charge.success" && (data.status as string) === "success") {
     const supabase = getSupabase();
-    await supabase.from("donations").insert({
+    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
+    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
+    const { error: upsertErr } = await supabase.from("donations").upsert({
       amount: (data.amount as number) / 100,
       currency: data.currency || "KES",
-      donor_email: data.customer ? (data.customer as Record<string, unknown>).email : "",
-      donor_name: data.metadata ? (data.metadata as Record<string, unknown>).name || "" : "",
+      donor_email: donorEmail,
+      donor_name: donorName,
       recurring: false,
       payment_provider: "paystack",
       payment_reference: data.reference as string,
       status: "completed",
-    });
-    const donorEmail = data.customer ? (data.customer as Record<string, unknown>).email as string : "";
-    const donorName = data.metadata ? (data.metadata as Record<string, unknown>).name as string : "";
-    await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
+    }, { onConflict: "payment_reference", ignoreDuplicates: true });
+    if (!upsertErr) await sendDonationEmail(c, donorEmail, donorName, (data.amount as number) / 100, (data.currency as string) || "KES");
   }
 
   return c.json({ received: true });
 });
 
+async function getPayPalAccessToken(clientId: string, clientSecret: string): Promise<string> {
+  const creds = btoa(`${clientId}:${clientSecret}`);
+  const res = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+    method: "POST",
+    headers: { Authorization: `Basic ${creds}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=client_credentials",
+  });
+  const data: Record<string, unknown> = await res.json();
+  return data.access_token as string;
+}
+
 paymentRoutes.post("/paypal/create", zValidator("json", z.object({
-  amount: z.number().positive(),
+  amount: z.number().positive().max(1_000_000),
   currency: z.string().default("USD"),
 })), async (c) => {
+  const clientId = getSecret(c, "PAYPAL_CLIENT_ID");
+  const clientSecret = getSecret(c, "PAYPAL_CLIENT_SECRET");
+  if (!clientId || !clientSecret) return c.json({ error: "PayPal not configured" }, 503);
+
   const { amount, currency } = c.req.valid("json");
+  const accessToken = await getPayPalAccessToken(clientId, clientSecret);
   const res = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
       intent: "CAPTURE",
@@ -182,10 +199,15 @@ paymentRoutes.post("/paypal/create", zValidator("json", z.object({
 paymentRoutes.post("/paypal/capture", zValidator("json", z.object({
   orderId: z.string(),
 })), async (c) => {
+  const clientId = getSecret(c, "PAYPAL_CLIENT_ID");
+  const clientSecret = getSecret(c, "PAYPAL_CLIENT_SECRET");
+  if (!clientId || !clientSecret) return c.json({ error: "PayPal not configured" }, 503);
+
   const { orderId } = c.req.valid("json");
+  const accessToken = await getPayPalAccessToken(clientId, clientSecret);
   const res = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}/capture`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
   });
   const data: Record<string, unknown> = await res.json();
 

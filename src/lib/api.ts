@@ -74,7 +74,7 @@ export const api = {
       });
     },
     me: async () => {
-      return request<AuthUser>("/auth/me", { headers: authHeaders() });
+      return request<AuthUser>("/auth/me");
     },
   },
 

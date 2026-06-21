@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/cloudflare";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -13,15 +14,32 @@ import { streamRoutes } from "../../backend/src/routes/streams";
 import { donationRoutes } from "../../backend/src/routes/donations";
 import { paymentRoutes } from "../../backend/src/routes/payments";
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Record<string, string> }>();
 
 app.use("*", async (c, next) => {
   setEnv(c.env as Record<string, string>);
   await next();
 });
 
-app.use("*", cors());
+app.use("*", cors({
+  origin: (origin) => {
+    const allowed = [
+      "https://hkn-website.pages.dev",
+      "https://heavenlykingdomnetwork.org",
+      "https://www.heavenlykingdomnetwork.org",
+    ];
+    if (!origin || origin.startsWith("http://localhost:")) return origin || "";
+    return allowed.includes(origin) ? origin : "";
+  },
+  credentials: true,
+}));
+
 app.use("*", logger());
+
+app.onError((err, c) => {
+  console.error("[Worker Error]", err);
+  return c.json({ error: "Internal server error" }, 500);
+});
 
 app.get("/api/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
 
@@ -35,4 +53,11 @@ app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
 
-export const onRequest = handle(app);
+export const onRequest = Sentry.withSentry(
+  (env: Record<string, string>) => ({
+    dsn: env.SENTRY_DSN || "",
+    tracesSampleRate: 0.1,
+    release: env.CF_PAGES_COMMIT_SHA || "unknown",
+  }),
+  handle(app)
+);

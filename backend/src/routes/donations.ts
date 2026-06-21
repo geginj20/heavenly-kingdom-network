@@ -10,7 +10,7 @@ import { Resend } from "resend";
 export const donationRoutes = new Hono();
 
 const createDonationSchema = z.object({
-  amount: z.number().positive(),
+  amount: z.number().positive().max(1_000_000),
   recurring: z.boolean().optional().default(false),
   donor_name: z.string().optional().default("Anonymous"),
   donor_email: z.string().email().optional().default(""),

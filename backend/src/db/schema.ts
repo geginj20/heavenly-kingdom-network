@@ -85,7 +85,7 @@ export const donations = pgTable("donations", {
   currency: text("currency").default("KES"),
   recurring: boolean("recurring").default(false),
   paymentProvider: text("payment_provider"),
-  paymentReference: text("payment_reference"),
+  paymentReference: text("payment_reference").unique(),
   status: text("status").default("completed"),
   createdAt: timestamp("created_at").defaultNow(),
 });

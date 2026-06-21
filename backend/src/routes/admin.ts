@@ -3,9 +3,10 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { requireAdmin } from "../lib/jwt";
+import { rateLimit } from "../lib/rateLimiter";
 
 export const adminRoutes = new Hono();
-adminRoutes.use("*", requireAdmin);
+adminRoutes.use("*", rateLimit, requireAdmin);
 
 adminRoutes.get("/stats", async (c) => {
   const supabase = getSupabase();

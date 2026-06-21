@@ -34,7 +34,7 @@
 | **Auth** | Hono JWT (Web Crypto API) |
 | **Payments** | Paystack + PayPal + Wise FX |
 | **Deployment** | Cloudflare Pages (CI/CD via GitHub Actions) |
-| **Testing** | Vitest + React Testing Library |
+| **Testing** | Vitest + React Testing Library + Playwright E2E |
 
 ## Bible Translations Available
 
@@ -102,8 +102,8 @@ backend/
 ## Architecture
 
 - **Frontend:** React SPA with HashRouter, deployed to Cloudflare Pages
-- **Backend:** Hono REST API running on Cloudflare Pages Functions (same origin, no CORS needed)
-- **Database:** Supabase PostgreSQL with Row-Level Security
+- **Backend:** Hono REST API running on Cloudflare Pages Functions (`functions/api/[[path]].ts`)
+- **Database:** Supabase PostgreSQL; backend connects via service-role key; authorization enforced at API middleware layer (`requireAdmin`)
 - **Authentication:** JWT-based with Hono middleware, 7-day expiry
 - **Rate Limiting:** In-memory sliding window (20 req/min standard, 5 req/min for auth)
 - **Payments:** Paystack for African currencies (M-Pesa + cards), PayPal for international, Wise for FX rates

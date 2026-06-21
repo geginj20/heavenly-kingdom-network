@@ -37,15 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    const token = api.getToken();
-    if (!token) {
-      queueMicrotask(() => { if (!cancelled) setLoading(false); });
-      return () => { cancelled = true; };
-    }
     api.auth
       .me()
       .then((u) => { if (!cancelled) setUser(u as User); })
-      .catch(() => { if (!cancelled) api.clearToken(); })
+      .catch(() => { /* not logged in — that's fine */ })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);

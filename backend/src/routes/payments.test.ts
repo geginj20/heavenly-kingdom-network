@@ -85,13 +85,13 @@ describe('Payment Routes', () => {
     expect(res.status).toBe(400);
   });
 
-  test('POST /paypal/capture accepts valid orderId and returns error from PayPal', async () => {
+  test('POST /paypal/capture returns 503 when PayPal is not configured', async () => {
     const res = await app.request('/paypal/capture', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderId: 'fake-order-id' }),
     });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
   });
 
   test('GET /verify/:reference returns error for missing secret', async () => {
