@@ -21,4 +21,21 @@ test.describe('Core User Journeys', () => {
     await page.click('text=Events');
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
+
+  test('can navigate to Give page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('text=Give');
+    await expect(page.locator('h1', { hasText: 'Give' })).toBeVisible();
+  });
+
+  test('can navigate home and see featured content', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('h1, h2').first()).toBeVisible();
+  });
+
+  test('page title is set correctly', async ({ page }) => {
+    await page.goto('/');
+    const title = await page.title();
+    expect(title).not.toBe('');
+  });
 });

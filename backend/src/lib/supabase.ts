@@ -15,3 +15,7 @@ export function getSupabase() {
   }
   return _supabase;
 }
+
+export function resetSupabase() {
+  _supabase = null;
+}

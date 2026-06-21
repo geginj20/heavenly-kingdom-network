@@ -38,6 +38,18 @@ app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
 
-export default Sentry.withSentry((env: { SENTRY_DSN?: string }) => ({
+app.onError((err, c) => {
+  Sentry.captureException(err, {
+    extra: { url: c.req.url, method: c.req.method },
+  });
+  return c.json({ error: "Internal Server Error" }, 500);
+});
+
+app.notFound((c) => c.json({ error: "Not Found" }, 404));
+
+export default Sentry.withSentry((env: Record<string, string>) => ({
   dsn: env.SENTRY_DSN || "",
+  tracesSampleRate: env.SENTRY_TRACES_SAMPLE_RATE ? parseFloat(env.SENTRY_TRACES_SAMPLE_RATE) : 0.1,
+  environment: env.SENTRY_ENVIRONMENT || env.CF_PAGES_BRANCH || "development",
+  release: env.SENTRY_RELEASE || undefined,
 }), app);

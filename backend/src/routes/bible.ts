@@ -305,34 +305,46 @@ bibleRoutes.get("/daily", async (c) => {
 bibleRoutes.get("/search", rateLimit, async (c) => {
   const query = c.req.query("q");
   const translation = (c.req.query("translation") || "kjv") as string;
+  const limit = Math.min(Math.max(Number(c.req.query("limit")) || 20, 1), 50);
+  const offset = Math.max(Number(c.req.query("offset")) || 0, 0);
 
   if (!query || query.length < 3) {
     return c.json({ results: [], error: "Query must be at least 3 characters" });
   }
+  if (query.length > 100) {
+    return c.json({ results: [], error: "Query too long" });
+  }
 
-  const cacheKey = `${query.toLowerCase()}:${translation}`;
+  const cacheKey = `${query.toLowerCase().slice(0, 80)}:${translation}:${limit}:${offset}`;
   const cached = searchCache.get(cacheKey);
   if (cached && Date.now() - cached.time < 1000 * 60 * 60) {
     return c.json(cached.results);
   }
 
   const results: Array<{ book: string; chapter: number; verse: number; text: string }> = [];
+  const lowerQuery = query.toLowerCase();
+  const maxBooks = 3;
+  const maxChapters = 3;
+  const searchTimeout = 8000;
+  const startTime = Date.now();
 
-  for (const book of BOOKS.slice(0, 10)) {
-    if (results.length >= 50) break;
-    for (let ch = 1; ch <= Math.min(book.chapters, 5); ch++) {
-      if (results.length >= 50) break;
+  for (const book of BOOKS.slice(0, maxBooks)) {
+    if (results.length >= limit + offset) break;
+    if (Date.now() - startTime > searchTimeout) break;
+    for (let ch = 1; ch <= Math.min(book.chapters, maxChapters); ch++) {
+      if (results.length >= limit + offset) break;
+      if (Date.now() - startTime > searchTimeout) break;
       try {
         const result = await fetchChapter(book.name, ch, translation);
         if (!result) continue;
         const matches = (result.verses || []).filter(
-          (v: { verse: number; text: string }) => v.text.toLowerCase().includes(query.toLowerCase())
+          (v: { verse: number; text: string }) => v.text.toLowerCase().includes(lowerQuery)
         );
         for (const m of matches) {
           results.push({ book: book.name, chapter: ch, verse: m.verse, text: m.text.slice(0, 150) });
         }
         if (matches.length > 0) {
-          await new Promise((r) => setTimeout(r, 300));
+          await new Promise((r) => setTimeout(r, 200));
         }
       } catch {
         continue;
@@ -340,7 +352,8 @@ bibleRoutes.get("/search", rateLimit, async (c) => {
     }
   }
 
-  const payload = { results, query, translation };
+  const paginated = results.slice(offset, offset + limit);
+  const payload = { results: paginated, total: results.length, query, translation, limit, offset };
   searchCache.set(cacheKey, { time: Date.now(), results: payload });
   return c.json(payload);
 });
