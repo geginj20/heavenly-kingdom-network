@@ -54,7 +54,7 @@ paymentRoutes.post("/initialize", zValidator("json", z.object({
   email: z.string().email(),
   amount: z.number().positive(),
   currency: z.string().default("KES"),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })), async (c) => {
   const secret = getSecret(c, "PAYSTACK_SECRET_KEY");
   if (!secret) return c.json({ error: "Payment gateway not configured" }, 503);

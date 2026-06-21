@@ -38,13 +38,6 @@ app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
 
-export default {
-  fetch: (request: Request, env: Record<string, string>, ctx: ExecutionContext) => {
-    Sentry.init({
-      dsn: env.SENTRY_DSN || "",
-    });
-    return Sentry.withSentry(env, ctx, () => {
-      return app.fetch(request, env, ctx);
-    });
-  }
-};
+export default Sentry.withSentry((env: { SENTRY_DSN?: string }) => ({
+  dsn: env.SENTRY_DSN || "",
+}), app);
