@@ -1,13 +1,18 @@
 import { getSupabase } from "./supabase";
+import { randomUUID } from "crypto";
 
 async function seed() {
   console.log("Seeding database...");
 
   const supabase = getSupabase();
 
+  const adminPassword = randomUUID();
+  const pastorPassword = randomUUID();
+  const memberPassword = randomUUID();
+
   const { data: adminAuth, error: adminErr } = await supabase.auth.admin.createUser({
     email: "admin@hkn.com",
-    password: "admin123",
+    password: adminPassword,
     email_confirm: true,
   });
   if (adminErr) {
@@ -18,14 +23,14 @@ async function seed() {
 
   const { data: sarahAuth } = await supabase.auth.admin.createUser({
     email: "sarah@email.com",
-    password: "pastor123",
+    password: pastorPassword,
     email_confirm: true,
   });
   const sarahId = sarahAuth?.user?.id;
 
   const { data: davidAuth } = await supabase.auth.admin.createUser({
     email: "david@email.com",
-    password: "member123",
+    password: memberPassword,
     email_confirm: true,
   });
   const davidId = davidAuth?.user?.id;
@@ -40,7 +45,11 @@ async function seed() {
     { id: sarahId, name: "Sarah Mitchell", email: "sarah@email.com", role: "pastor" },
     { id: davidId, name: "David Kim", email: "david@email.com", role: "member" },
   ]);
-  console.log("Users seeded");
+  
+  console.log("Users seeded with random passwords:");
+  console.log(`admin@hkn.com: ${adminPassword}`);
+  console.log(`sarah@email.com: ${pastorPassword}`);
+  console.log(`david@email.com: ${memberPassword}`);
 
   await supabase.from("prayers").insert([
     { name: "Sarah M.", anonymous: false, category: "Healing", text: "Please pray for my mother who is undergoing surgery next week.", prayers: 24, comments: 3, status: "approved", user_id: sarahId },

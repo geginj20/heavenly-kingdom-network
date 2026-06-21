@@ -43,9 +43,7 @@ prayerRoutes.post("/", rateLimit, zValidator("json", createPrayerSchema), async 
 prayerRoutes.post("/:id/pray", async (c) => {
   const supabase = getSupabase();
   const id = Number(c.req.param("id"));
-  const { data: current } = await supabase.from("prayers").select("prayers").eq("id", id).single();
-  const count = (current?.prayers || 0) + 1;
-  const { data: prayer, error } = await supabase.from("prayers").update({ prayers: count }).eq("id", id).select().single();
+  const { data: prayer, error } = await supabase.rpc("increment_prayer_count", { p_id: id }).single();
   if (error) return c.json({ error: error.message }, 500);
   return c.json(prayer);
 });
@@ -78,9 +76,7 @@ prayerRoutes.post("/:id/comments", zValidator("json", commentSchema), async (c) 
   }).select().single();
   if (error) return c.json({ error: error.message }, 500);
 
-  const { data: current } = await supabase.from("prayers").select("comments").eq("id", prayerId).single();
-  const count = (current?.comments || 0) + 1;
-  await supabase.from("prayers").update({ comments: count }).eq("id", prayerId);
+  await supabase.rpc("increment_prayer_comment_count", { p_id: prayerId });
 
   return c.json(comment, 201);
 });

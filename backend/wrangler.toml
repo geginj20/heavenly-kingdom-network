@@ -5,6 +5,5 @@ main = "src/index.ts"
 compatibility_date = "2025-03-01"
 
 [vars]
-JWT_SECRET = "dev-secret-change-in-production"
 SUPABASE_URL = ""
 SUPABASE_SERVICE_KEY = ""

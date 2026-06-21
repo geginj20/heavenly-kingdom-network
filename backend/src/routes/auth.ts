@@ -4,6 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { signToken, verifyToken } from "../lib/jwt";
 import { rateLimit, strictRateLimit } from "../lib/rateLimiter";
+import { setCookie } from "hono/cookie";
 
 export const authRoutes = new Hono();
 
@@ -37,6 +38,13 @@ authRoutes.post("/login", rateLimit, zValidator("json", loginSchema), async (c) 
   }
 
   const token = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  setCookie(c, "token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
   return c.json({
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
@@ -64,6 +72,13 @@ authRoutes.post("/register", strictRateLimit, zValidator("json", registerSchema)
   if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
   const token = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  setCookie(c, "token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
   return c.json({
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -97,6 +112,13 @@ authRoutes.post("/google", zValidator("json", googleSchema), async (c) => {
   if (!user) return c.json({ error: "Failed to create profile" }, 500);
 
   const jwt = await signToken({ userId: user.id, role: user.role || "member", name: user.name, email: user.email || undefined });
+  setCookie(c, "token", jwt, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
   return c.json({
     token: jwt,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
@@ -117,9 +139,12 @@ authRoutes.post("/reset-password", zValidator("json", z.object({
   password: z.string().min(6),
   token: z.string().min(1),
 })), async (c) => {
-  const { password } = c.req.valid("json");
+  const { password, token } = c.req.valid("json");
   const supabase = getSupabase();
-  const { error } = await supabase.auth.updateUser({ password });
+  const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !user) return c.json({ error: "Invalid or expired token" }, 400);
+
+  const { error } = await supabase.auth.admin.updateUserById(user.id, { password });
   if (error) return c.json({ error: error.message }, 400);
   return c.json({ ok: true, message: "Password updated successfully." });
 });

@@ -8,6 +8,20 @@ function getSecret(c: { env?: unknown }, key: string): string {
   return env?.[key] || (process.env as Record<string, string>)?.[key] || "";
 }
 
+async function generateHmacSha512Hex(text: string, secret: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-512" },
+    false,
+    ["sign"]
+  );
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, enc.encode(text));
+  const hashArray = Array.from(new Uint8Array(signatureBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function paystackPost(path: string, body: unknown, secret: string) {
   const res = await fetch(`https://api.paystack.co${path}`, {
     method: "POST",
@@ -92,7 +106,16 @@ paymentRoutes.post("/webhook", async (c) => {
   const secret = getSecret(c, "PAYSTACK_SECRET_KEY");
   if (!secret) return c.json({ error: "Not configured" }, 503);
 
-  const body: Record<string, unknown> = await c.req.json();
+  const signature = c.req.header("x-paystack-signature");
+  if (!signature) return c.json({ error: "No signature" }, 401);
+
+  const rawBody = await c.req.text();
+  const expectedSignature = await generateHmacSha512Hex(rawBody, secret);
+  if (signature !== expectedSignature) {
+    return c.json({ error: "Invalid signature" }, 401);
+  }
+
+  const body: Record<string, unknown> = JSON.parse(rawBody);
   const event = body.event as string;
   const data = body.data as Record<string, unknown>;
 

@@ -4,7 +4,9 @@ import { getCookie } from "hono/cookie";
 import { getEnv } from "./env";
 
 function getJwtSecret(): string {
-  return getEnv("JWT_SECRET") || process.env.JWT_SECRET || "hkn-dev-secret-change-in-production";
+  const secret = getEnv("JWT_SECRET") || process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET is not configured");
+  return secret;
 }
 
 export interface JwtPayload {
