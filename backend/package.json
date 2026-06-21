@@ -10,7 +10,8 @@
     "seed": "tsx --env-file=.env src/lib/seed.ts",
     "migrate": "drizzle-kit push",
     "migrate:generate": "drizzle-kit generate",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.8.0",
