@@ -179,6 +179,7 @@ export default function AdminDashboard() {
         time: fd.get("time") as string,
         location: fd.get("location") as string,
         description: fd.get("description") as string,
+        isOnline: fd.get("isOnline") === "on",
       });
       showToast("Event created!", "success");
       setShowEventModal(false);
@@ -201,6 +202,7 @@ export default function AdminDashboard() {
         time: fd.get("time") as string,
         location: fd.get("location") as string,
         description: fd.get("description") as string,
+        isOnline: fd.get("isOnline") === "on",
       });
       showToast("Event updated!", "success");
       setEditingEvent(null);
@@ -777,7 +779,7 @@ export default function AdminDashboard() {
               className="bg-[#0f2240] rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-white/5"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-display text-xl font-semibold text-white">Create Event</h3>
+                <h3 className="font-display text-xl font-semibold text-white">{editingEvent ? "Edit Event" : "Create Event"}</h3>
                 <button
                   onClick={() => setShowEventModal(false)}
                   className="p-1 rounded-lg hover:bg-white/10 transition-colors"
@@ -792,6 +794,7 @@ export default function AdminDashboard() {
                     id="create-title"
                     name="title"
                     type="text"
+                    defaultValue={editingEvent?.title || ""}
                     placeholder="Enter event title"
                     className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                   />
@@ -803,6 +806,7 @@ export default function AdminDashboard() {
                       id="create-date"
                       name="date"
                       type="date"
+                      defaultValue={editingEvent?.date || ""}
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                     />
                   </div>
@@ -812,6 +816,7 @@ export default function AdminDashboard() {
                       id="create-time"
                       name="time"
                       type="time"
+                      defaultValue={editingEvent?.time || ""}
                       className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                     />
                   </div>
@@ -822,6 +827,7 @@ export default function AdminDashboard() {
                     id="create-location"
                     name="location"
                     type="text"
+                    defaultValue={editingEvent?.location || ""}
                     placeholder="Physical location or 'Online'"
                     className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
                   />
@@ -832,8 +838,19 @@ export default function AdminDashboard() {
                     id="create-description"
                     name="description"
                     rows={3}
-                    placeholder="Event description..."
-                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none"
+                    defaultValue={editingEvent?.description || ""}
+                    placeholder="Event details..."
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <label htmlFor="create-isOnline" className="text-sm text-white/60">Online Event (Live Stream)</label>
+                  <input
+                    id="create-isOnline"
+                    name="isOnline"
+                    type="checkbox"
+                    defaultChecked={editingEvent?.isOnline || false}
+                    className="w-4 h-4 rounded text-[#d4af37] bg-white/5 border-white/10 focus:ring-[#d4af37]"
                   />
                 </div>
                 <button type="submit" className="w-full btn-gold">

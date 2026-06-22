@@ -4,8 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { requireAdmin, verifyToken } from "../lib/jwt";
 import { getCookie } from "hono/cookie";
-import { getEnv } from "../lib/env";
-import { Resend } from "resend";
+import { sendDonationEmail } from "../lib/email";
 
 export const donationRoutes = new Hono();
 
@@ -27,16 +26,7 @@ donationRoutes.post("/", requireAdmin, zValidator("json", createDonationSchema),
   }).select().single();
   if (error) return c.json({ error: error.message }, 500);
 
-  const resendKey = getEnv("RESEND_API_KEY") || process.env.RESEND_API_KEY;
-  if (resendKey && data.donor_email) {
-    const resend = new Resend(resendKey);
-    await resend.emails.send({
-      from: "Kingdom Mission Network <giving@heavenlykingdomnetwork.org>",
-      to: data.donor_email,
-      subject: "Thank you for your Donation",
-      html: `<p>Hi ${data.donor_name || 'Anonymous'},</p><p>We have successfully received your donation of ${data.amount}. Thank you for your generosity!</p>`,
-    });
-  }
+  await sendDonationEmail(c, data.donor_email, data.donor_name, data.amount, "KES");
 
   return c.json(donation, 201);
 });
