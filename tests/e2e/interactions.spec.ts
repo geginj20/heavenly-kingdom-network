@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMobileNavIfNeeded } from './helpers';
 
 test.describe('Interactive User Journeys', () => {
   test('can submit a prayer request', async ({ page }) => {
@@ -11,6 +12,7 @@ test.describe('Interactive User Journeys', () => {
     });
 
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Prayer Wall');
     await expect(page.locator('h1', { hasText: 'Prayer Wall' })).toBeVisible();
     await page.fill('input[placeholder*="Name"]', 'Test User');
@@ -34,12 +36,14 @@ test.describe('Interactive User Journeys', () => {
     });
 
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Events');
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
 
   test('can browse bible reader', async ({ page }) => {
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Scriptures');
     await expect(page.locator('h1', { hasText: 'Holy Bible' })).toBeVisible();
     const firstBook = page.locator('button:has-text("Genesis"), div:has-text("Genesis")').first();

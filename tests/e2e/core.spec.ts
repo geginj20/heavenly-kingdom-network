@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { openMobileNavIfNeeded } from './helpers';
 
 test.describe('Core User Journeys', () => {
   test('can navigate to prayer wall and see request form', async ({ page }) => {
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Prayer Wall');
     await expect(page.locator('h1', { hasText: 'Prayer Wall' })).toBeVisible();
     await expect(page.locator('form')).toBeVisible();
@@ -10,6 +12,7 @@ test.describe('Core User Journeys', () => {
 
   test('can navigate to Bible and search', async ({ page }) => {
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Scriptures');
     await expect(page.locator('h1', { hasText: 'Holy Bible' })).toBeVisible();
     await page.click('button[title="Search"]');
@@ -18,12 +21,14 @@ test.describe('Core User Journeys', () => {
 
   test('can view events', async ({ page }) => {
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Events');
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
 
   test('can navigate to Give section', async ({ page }) => {
     await page.goto('/');
+    await openMobileNavIfNeeded(page);
     await page.click('text=Give');
     await expect(page.locator('h2', { hasText: 'Support the Mission' })).toBeVisible();
   });
