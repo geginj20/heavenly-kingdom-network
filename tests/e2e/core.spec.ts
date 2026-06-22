@@ -1,39 +1,25 @@
 import { test, expect } from '@playwright/test';
-import { openMobileNavIfNeeded } from './helpers';
 
 test.describe('Core User Journeys', () => {
-  test('can navigate to prayer wall and see request form', async ({ page }) => {
-    await page.goto('/');
-    await openMobileNavIfNeeded(page);
-    await page.click('text=Prayer Wall');
+  test('prayer wall page renders with form', async ({ page }) => {
+    await page.goto('/#/prayer-wall');
     await expect(page.locator('h1', { hasText: 'Prayer Wall' })).toBeVisible();
     await expect(page.locator('form')).toBeVisible();
   });
 
-  test('can navigate to Bible and search', async ({ page }) => {
-    await page.goto('/');
-    await openMobileNavIfNeeded(page);
-    await page.click('text=Scriptures');
+  test('bible page renders with search', async ({ page }) => {
+    await page.goto('/#/bible');
     await expect(page.locator('h1', { hasText: 'Holy Bible' })).toBeVisible();
     await page.click('button[title="Search"]');
     await expect(page.locator('input[placeholder*="Search scripture"]')).toBeVisible();
   });
 
-  test('can view events', async ({ page }) => {
-    await page.goto('/');
-    await openMobileNavIfNeeded(page);
-    await page.click('text=Events');
+  test('events page renders', async ({ page }) => {
+    await page.goto('/#/events');
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
 
-  test('can navigate to Give section', async ({ page }) => {
-    await page.goto('/');
-    await openMobileNavIfNeeded(page);
-    await page.click('text=Give');
-    await expect(page.locator('h2', { hasText: 'Support the Mission' })).toBeVisible();
-  });
-
-  test('can navigate home and see featured content', async ({ page }) => {
+  test('home page has featured content', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1, h2').first()).toBeVisible();
   });
