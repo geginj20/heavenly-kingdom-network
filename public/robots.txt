@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://hkn.org/sitemap.xml
+Sitemap: https://hkn-website.pages.dev/sitemap.xml
