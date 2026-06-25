@@ -10,7 +10,7 @@ import SEO from "../components/SEO";
 export default function Home() {
   return (
     <>
-      <SEO title="Home" />
+      <SEO title="Kingdom Mission Network" description="Kingdom Mission Network - A global community of believers united in faith, prayer, and worship. Join us for sermons, events, and daily Bible study." />
       <HeroSection />
       <ScriptureSection />
       <PrayerPreviewSection />
