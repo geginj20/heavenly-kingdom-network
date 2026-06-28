@@ -18,7 +18,7 @@
     "@sentry/cloudflare": "^10.59.0",
     "@supabase/supabase-js": "^2.108.2",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.26",
+    "hono": "^4.12.27",
     "pg": "^8.21.0",
     "resend": "^6.14.0",
     "zod": "^4.4.3"
