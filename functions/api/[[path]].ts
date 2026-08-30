@@ -27,6 +27,7 @@ app.use("*", cors({
       "https://hkn-website.pages.dev",
       "https://heavenlykingdomnetwork.org",
       "https://www.heavenlykingdomnetwork.org",
+      "https://KingdomMissionNetwork.hkmministries.org",
     ];
     if (!origin || origin.startsWith("http://localhost:")) return origin || "";
     return allowed.includes(origin) ? origin : "";

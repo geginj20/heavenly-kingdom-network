@@ -10,7 +10,7 @@ test.describe('Interactive User Journeys', () => {
       }
     });
 
-    await page.goto('/#/prayer-wall');
+    await page.goto('/prayer-wall');
     await expect(page.locator('h1', { hasText: 'Prayer Wall' })).toBeVisible();
     await page.fill('input[placeholder*="Name"]', 'Test User');
     await page.fill('textarea', 'Please pray for my family during this time');
@@ -32,12 +32,12 @@ test.describe('Interactive User Journeys', () => {
       await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: 1 }) });
     });
 
-    await page.goto('/#/events');
+    await page.goto('/events');
     await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
   });
 
   test('can browse bible reader', async ({ page }) => {
-    await page.goto('/#/bible');
+    await page.goto('/bible');
     await expect(page.locator('h1', { hasText: 'Holy Bible' })).toBeVisible();
     const firstBook = page.locator('button:has-text("Genesis"), div:has-text("Genesis")').first();
     if (await firstBook.isVisible()) {
@@ -47,8 +47,8 @@ test.describe('Interactive User Journeys', () => {
   });
 
   test('can navigate home from any page', async ({ page }) => {
-    await page.goto('/#/events');
-    await page.locator('a[href="#/"], button:has-text("Home"), nav a:first-child').first().click();
+    await page.goto('/events');
+    await page.locator('a[href="/"], a[href="#/"], button:has-text("Home"), nav a:first-child').first().click();
     await page.waitForTimeout(500);
     expect(page.url()).toContain('/');
   });
