@@ -15,6 +15,7 @@ const Sermons = lazy(() => import("./pages/Sermons"));
 const Events = lazy(() => import("./pages/Events"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const DonationHistory = lazy(() => import("./pages/DonationHistory"));
+const SubscriptionPortal = lazy(() => import("./pages/SubscriptionPortal"));
 
 function PageLoader() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
                   <Route path="/sermons" element={<Sermons />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/donations" element={<DonationHistory />} />
+                  <Route path="/subscribe" element={<SubscriptionPortal />} />
                   <Route
                     path="/admin"
                     element={

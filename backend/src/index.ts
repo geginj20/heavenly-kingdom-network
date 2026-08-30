@@ -10,6 +10,7 @@ import { adminRoutes } from "./routes/admin";
 import { streamRoutes } from "./routes/streams";
 import { donationRoutes } from "./routes/donations";
 import { paymentRoutes } from "./routes/payments";
+import { subscriptionRoutes } from "./routes/subscriptions";
 import * as Sentry from "@sentry/cloudflare";
 
 const app = new Hono();
@@ -37,6 +38,7 @@ app.route("/api/admin", adminRoutes);
 app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
+app.route("/api/subscriptions", subscriptionRoutes);
 
 app.onError((err, c) => {
   Sentry.captureException(err, {

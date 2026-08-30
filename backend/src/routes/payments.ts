@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
 import { sendDonationEmail } from "../lib/email";
+import { fetchExchangeRate } from "../lib/exchangeRate";
 
 function getSecret(c: { env?: unknown }, key: string): string {
   const env = c.env as Record<string, string> | undefined;
@@ -229,16 +230,6 @@ paymentRoutes.get("/rate", async (c) => {
   const source = c.req.query("from") || "USD";
   const target = c.req.query("to") || "KES";
   const wiseToken = getSecret(c, "WISE_API_TOKEN");
-
-  if (wiseToken) {
-    try {
-      const rates: Array<{ rate: number; source: string; target: string; time: string }> = await wiseGet(`/v1/rates?source=${source}&target=${target}`, wiseToken);
-      if (rates?.length) return c.json({ rate: rates[0].rate, source, target, provider: "wise" });
-    } catch { /* fallthrough */ }
-  }
-
-  const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${source}`);
-  const data: Record<string, unknown> = await res.json();
-  const rates = data.rates as Record<string, number>;
-  return c.json({ rate: rates?.[target] || 0, source, target, provider: "exchangerate-api" });
+  const result = await fetchExchangeRate(source, target, wiseToken);
+  return c.json({ rate: result.rate, source, target, provider: result.provider });
 });

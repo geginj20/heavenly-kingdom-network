@@ -13,6 +13,7 @@ import { adminRoutes } from "../../backend/src/routes/admin";
 import { streamRoutes } from "../../backend/src/routes/streams";
 import { donationRoutes } from "../../backend/src/routes/donations";
 import { paymentRoutes } from "../../backend/src/routes/payments";
+import { subscriptionRoutes } from "../../backend/src/routes/subscriptions";
 
 const app = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -53,6 +54,7 @@ app.route("/api/admin", adminRoutes);
 app.route("/api/streams", streamRoutes);
 app.route("/api/donations", donationRoutes);
 app.route("/api/payments", paymentRoutes);
+app.route("/api/subscriptions", subscriptionRoutes);
 
 export const onRequest = Sentry.withSentry(
   (env: Record<string, string>) => ({

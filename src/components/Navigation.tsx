@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Radio, User, Book, Heart, Headphones, Calendar, Gift, DollarSign } from "lucide-react";
+import { Menu, X, Radio, User, Book, Heart, Headphones, Calendar, Gift, DollarSign, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -8,6 +8,7 @@ const navLinks = [
   { label: "Prayer Wall", path: "/prayer-wall", icon: Heart },
   { label: "Sermons", path: "/sermons", icon: Headphones },
   { label: "Events", path: "/events", icon: Calendar },
+  { label: "Partner", path: "/subscribe", icon: Crown },
   { label: "Give", path: "/#give", icon: Gift },
 ];
 

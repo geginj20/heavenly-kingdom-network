@@ -8,8 +8,6 @@
     "start": "tsx src/index.ts",
     "build": "tsc",
     "seed": "tsx --env-file=.env src/lib/seed.ts",
-    "migrate": "drizzle-kit push",
-    "migrate:generate": "drizzle-kit generate",
     "deploy": "wrangler deploy",
     "test": "vitest run"
   },
@@ -17,16 +15,12 @@
     "@hono/zod-validator": "^0.8.0",
     "@sentry/cloudflare": "^10.59.0",
     "@supabase/supabase-js": "^2.108.2",
-    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.26",
-    "pg": "^8.21.0",
     "resend": "^6.14.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
-    "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.30.0",
     "tsx": "^4.19.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",

@@ -213,6 +213,51 @@ export const api = {
     paypalCapture: async (data: { orderId: string }) => {
       return request("/payments/paypal/capture", { method: "POST", body: JSON.stringify(data) });
     },
+    getRate: async (from = "KES", to = "USD") => {
+      return request<{ rate: number; source: string; target: string; provider: string }>(`/payments/rate?from=${from}&to=${to}`);
+    },
+  },
+
+  subscriptions: {
+    getPricing: async () => {
+      return request<{
+        planName: string;
+        kesAmount: number;
+        usdAmount: number;
+        exchangeRate: number;
+        interval: string;
+        provider: string;
+        description: string;
+      }>("/subscriptions/pricing");
+    },
+    initialize: async (data: { email: string; name?: string; interval?: "monthly" | "yearly"; currency?: "KES" | "USD" }) => {
+      return request<{
+        authorization_url?: string;
+        reference?: string;
+        access_code?: string;
+        usdAmount: number;
+        kesAmount: number;
+        exchangeRate: number;
+      }>("/subscriptions/initialize", { method: "POST", body: JSON.stringify(data) });
+    },
+    verify: async (reference: string) => {
+      return request<{ status: string; amount: number; currency: string; reference: string }>(`/subscriptions/verify/${reference}`);
+    },
+    paypalCreate: async (data: { name?: string; email?: string }) => {
+      return request<{ id: string; usdAmount: number; kesAmount: number; exchangeRate: number }>("/subscriptions/paypal/create", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    paypalCapture: async (data: { orderId: string; subscriberName?: string }) => {
+      return request<{ status: string; id: string }>("/subscriptions/paypal/capture", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    getStatus: async (email: string) => {
+      return request<{ hasActiveSubscription: boolean; subscription?: Record<string, unknown> }>(`/subscriptions/status/${encodeURIComponent(email)}`);
+    },
   },
 
   admin: {
