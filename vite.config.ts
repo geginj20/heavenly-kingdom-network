@@ -8,11 +8,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    historyApiFallback: true,
   },
   preview: {
     port: 4173,
-    historyApiFallback: true,
   },
   resolve: {
     alias: {
