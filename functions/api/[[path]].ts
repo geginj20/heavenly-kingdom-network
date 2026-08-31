@@ -25,6 +25,8 @@ app.use("*", async (c, next) => {
 app.use("*", cors({
   origin: (origin) => {
     const allowed = [
+      "https://kingdommissionnetwork.org",
+      "https://www.kingdommissionnetwork.org",
       "https://hkn-website.pages.dev",
       "https://heavenlykingdomnetwork.org",
       "https://www.heavenlykingdomnetwork.org",

@@ -14,7 +14,7 @@ export default function SEO({ title, description, image, url }: SEOProps) {
   const fullTitle = `${title} | ${SITE_NAME}`;
   const desc = description || DEFAULT_DESC;
   const img = image || "/logo.png";
-  const href = url || "https://hkn-website.pages.dev";
+  const href = url || "https://kingdommissionnetwork.org";
 
   return (
     <Helmet>

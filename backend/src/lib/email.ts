@@ -11,8 +11,9 @@ export async function sendDonationEmail(c: { env?: unknown }, email: string, nam
   const resendKey = getSecret(c, "RESEND_API_KEY");
   if (resendKey) {
     const resend = new Resend(resendKey);
+    const fromAddress = getSecret(c, "RESEND_FROM_EMAIL") || "Kingdom Mission Network <giving@kingdommissionnetwork.org>";
     await resend.emails.send({
-      from: "Kingdom Mission Network <giving@heavenlykingdomnetwork.org>",
+      from: fromAddress,
       to: email,
       subject: "Thank you for your Donation",
       html: `<p>Hi ${name || 'Anonymous'},</p><p>We have successfully received your donation of ${amount} ${currency}. Thank you for your generosity!</p>`,

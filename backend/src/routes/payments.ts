@@ -43,13 +43,6 @@ async function paystackGet(path: string, secret: string) {
   return res.json();
 }
 
-async function wiseGet(path: string, token: string) {
-  const res = await fetch(`https://api.wise.com${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-}
-
 
 
 

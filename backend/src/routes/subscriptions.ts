@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getSupabase } from "../lib/supabase";
-import { computeKesToUsd, fetchExchangeRate } from "../lib/exchangeRate";
+import { computeKesToUsd } from "../lib/exchangeRate";
 import { sendDonationEmail } from "../lib/email";
 
 function getSecret(c: { env?: unknown }, key: string): string {

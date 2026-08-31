@@ -713,7 +713,7 @@ export default function AdminDashboard() {
               <div className="space-y-6">
                 {[
                   { label: "Platform Name", value: "Kingdom Mission Network", type: "text" },
-                  { label: "Contact Email", value: "admin@heavenlykingdom.network", type: "email" },
+                  { label: "Contact Email", value: "admin@kingdommissionnetwork.org", type: "email" },
                   { label: "Default Language", value: "English", type: "select" },
                   { label: "Prayer Moderation", value: "AI-assisted", type: "select" },
                   { label: "Auto-approve prayers", value: false, type: "toggle" },

@@ -90,8 +90,9 @@ eventRoutes.post("/:id/rsvp", zValidator("json", rsvpSchema), async (c) => {
   const resendKey = getEnv("RESEND_API_KEY") || process.env.RESEND_API_KEY;
   if (resendKey) {
     const resend = new Resend(resendKey);
+    const fromAddress = getEnv("RESEND_EVENTS_EMAIL") || getEnv("RESEND_FROM_EMAIL") || process.env.RESEND_EVENTS_EMAIL || "Kingdom Mission Network <events@kingdommissionnetwork.org>";
     await resend.emails.send({
-      from: "Kingdom Mission Network <events@heavenlykingdomnetwork.org>",
+      from: fromAddress,
       to: email,
       subject: "Event RSVP Confirmation",
       html: `<p>Hi ${name},</p><p>Thank you for your RSVP! We look forward to seeing you.</p>`,

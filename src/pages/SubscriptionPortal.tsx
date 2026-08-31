@@ -409,10 +409,11 @@ export default function SubscriptionPortal() {
                       {/* Subscriber details form */}
                       <div className="space-y-4 mb-6">
                         <div>
-                          <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
+                          <label htmlFor="subscriber-name" className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
                             Full Name
                           </label>
                           <input
+                            id="subscriber-name"
                             type="text"
                             placeholder="Your full name"
                             value={subscriberName}
@@ -422,10 +423,11 @@ export default function SubscriptionPortal() {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
+                          <label htmlFor="subscriber-email" className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
                             Email Address <span className="text-red-400">*</span>
                           </label>
                           <input
+                            id="subscriber-email"
                             type="email"
                             required
                             placeholder="your.email@example.com"
