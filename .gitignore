@@ -7,12 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production & Build outputs
+dist/
+dist-ssr/
+build/
 *.local
+
+# Environment variables & secrets
 .env
-.env.local
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Cloudflare & Wrangler
+.wrangler/
+wrangler.state/
+wrangler-*.log
+vite-*.log
 
 # Playwright
 playwright-report/
